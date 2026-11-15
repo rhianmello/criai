@@ -1,0 +1,20 @@
+name: CRIAI private admin boundary checks
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'admin-private/**'
+      - '.github/workflows/admin-private-audit.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  authorization:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Test default-deny authorization and MFA logic
+        run: node --test admin-private/tests/*.test.mjs
