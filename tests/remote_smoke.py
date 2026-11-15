@@ -59,6 +59,13 @@ with sync_playwright() as p:
                 if route=="/leadlovers.html":
                     links=page.locator('a[data-affiliate="leadlovers"]')
                     test(f"Hotlinks {width}",links.count()>=2 and all(links.nth(i).get_attribute("href")==HOTLINK and "sponsored" in (links.nth(i).get_attribute("rel") or "") for i in range(links.count())))
+                    monthly=page.locator("#mensalidade")
+                    test(f"Calculator visible {width}",monthly.count()==1)
+                    if monthly.count()==1:
+                        monthly.fill("100")
+                        page.locator("#meses").select_option("12")
+                        page.locator("#custosExtras").fill("50")
+                        test(f"Calculator math {width}","1.250,00" in page.locator("#custoTotal").inner_text(),page.locator("#custoTotal").inner_text())
                 if width==390 and route=="/":
                     toggle=page.locator(".menu-toggle");nav=page.locator("#menuPrincipal")
                     toggle.click();opened=nav.evaluate("el=>el.classList.contains('open')")
