@@ -16,7 +16,7 @@ function subtractDays(iso, number) {
 }
 function blank(name) {
   switch (name) {
-    case 'ga4': return {connection:'not_connected',last_synced:null,active_users:null,sessions:null,session_count_note:'Sessions require a non-duplicated session-level or landing-page aggregate',page_views:null,affiliate_clicks:null,channels:null};
+    case 'ga4': return {connection:'not_connected',last_synced:null,active_users:null,sessions:null,session_count_note:'Sessions require a non-duplicated session-level or landing-page aggregate',page_views:null,affiliate_clicks:null,channels:null,cta_placements:null};
     case 'google_ads':return {connection:'not_connected',last_synced:null,spend_brl:null,ad_clicks:null,campaigns:null};
     case 'hotmart':return {connection:'not_connected',last_synced:null,confirmed_commissions_brl:null,paid_commissions_brl:null,transactions:null};
   }
@@ -70,6 +70,17 @@ export function createOverviewReader({pgPool, getToday = todaySaoPaulo}) {
           for (const k of ['page_views','affiliate_clicks']) target[k] = numericalOrNull(r[k]);
           target.channels = (channels.rows || []).map(v=>({
             channel:String(v.channel),sessions:null,affiliate_clicks:numericalOrNull(v.affiliate_clicks)
+          }));
+        }
+        const placementRows = await pgPool.query(
+          'SELECT product_code, cta_placement, sum(affiliate_clicks) clicks FROM criai_private.affiliate_cta_daily WHERE provider=$1 AND day BETWEEN $2::date AND $3::date GROUP BY product_code, cta_placement ORDER BY sum(affiliate_clicks) DESC NULLS LAST LIMIT 80',
+          ['ga4',start,end]
+        );
+        if ((placementRows.rows || []).length > 0) {
+          target.cta_placements = placementRows.rows.map(v=>({
+            product_code:String(v.product_code),
+            placement:String(v.cta_placement),
+            affiliate_clicks:numericalOrNull(v.clicks)
           }));
         }
       } else if (row.source === 'google_ads') {
