@@ -112,4 +112,38 @@
     const firstAction = panel.querySelector('[data-consent]');
     if (firstAction) firstAction.focus();
   }));
+  // Independent on-page budgeting tool: no storage, cookies or transmission.
+  const costForm = document.getElementById('simuladorCusto');
+  if (costForm) {
+    const price = costForm.querySelector('#mensalidade');
+    const months = costForm.querySelector('#meses');
+    const extras = costForm.querySelector('#custosExtras');
+    const output = costForm.querySelector('#custoTotal');
+    const currency = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+
+    const recalculate = () => {
+      if (!price.value.trim()) {
+        output.textContent = 'Informe o preço mensal para calcular.';
+        return;
+      }
+      const monthly = Number(price.value);
+      const period = Number(months.value);
+      const additional = extras.value.trim() ? Number(extras.value) : 0;
+      if (!Number.isFinite(monthly) || !Number.isFinite(additional) ||
+          monthly < 0 || additional < 0 || ![3, 6, 12].includes(period)) {
+        output.textContent = 'Confira os valores informados.';
+        return;
+      }
+      output.textContent = 'Gasto estimado em ' + period + ' meses: ' +
+        currency.format(monthly * period + additional);
+    };
+
+    [price, months, extras].forEach(field => {
+      field.addEventListener('input', recalculate);
+      field.addEventListener('change', recalculate);
+    });
+    costForm.addEventListener('submit', event => event.preventDefault());
+    recalculate();
+  }
+
 })();
