@@ -56,7 +56,21 @@ with sync_playwright() as p:
                     analyticTag:!!document.querySelector('script[src*="googletagmanager.com"]')
                 })""")
                 test(f"Browser {width} {route}",resp is not None and resp.status==200 and state["heading"] and state["overflow"]<=3 and not state["analyticTag"],str(state))
+                if route in ("/", "/leadlovers.html"):
+                    links=page.locator('a[data-affiliate="leadlovers"]')
+                    test(f"Direct Hotlink buttons {width} {route}",links.count()>=4 and all(links.nth(i).get_attribute("href")==HOTLINK and "sponsored" in (links.nth(i).get_attribute("rel") or "") for i in range(links.count())))
+                    hero=page.locator('.hero-actions a[data-affiliate="leadlovers"]')
+                    test(f"Above-fold CTA {width} {route}",hero.count()==1 and hero.first.is_visible())
+                    mobile_bar=page.locator(".mobile-offer-bar")
+                    test(f"Responsive CTA bar {width} {route}",mobile_bar.is_visible()==(width<=750))
                 if route=="/leadlovers.html":
+                    demos=page.locator('button[data-video-id]')
+                    test(f"Producer videos {width}",demos.count()==5)
+                    test(f"No video embeds without click {width}",page.locator('.demo-iframe').count()==0)
+                    if width in (390,1440):
+                        context.route("**/www.youtube-nocookie.com/**",lambda route:route.abort())
+                        demos.first.click()
+                        test(f"Video embed only after click {width}",page.locator('iframe.demo-iframe[src^="https://www.youtube-nocookie.com/embed/"]').count()==1)
                     links=page.locator('a[data-affiliate="leadlovers"]')
                     test(f"Hotlinks {width}",links.count()>=2 and all(links.nth(i).get_attribute("href")==HOTLINK and "sponsored" in (links.nth(i).get_attribute("rel") or "") for i in range(links.count())))
                     monthly=page.locator("#mensalidade")
@@ -71,7 +85,9 @@ with sync_playwright() as p:
                     toggle.click();opened=nav.evaluate("el=>el.classList.contains('open')")
                     nav.locator("a").first.click();closed=not nav.evaluate("el=>el.classList.contains('open')")
                     test("Mobile menu",opened and closed)
-                if width in [390,1440] and route=="/":page.screenshot(path=str(OUT/f"home-{width}.png"),full_page=True)
+                if width in [390,1440] and route in ["/","/leadlovers.html"]:
+                    filename="home" if route=="/" else "offer"
+                    page.screenshot(path=str(OUT/f"{filename}-{width}.png"),full_page=True)
             except Exception as exc:test(f"Browser {width} {route}",False,repr(exc))
         test(f"JavaScript errors {width}",len(js_errors)==0,str(js_errors[:3]))
         context.close()
