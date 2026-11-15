@@ -91,6 +91,23 @@ with sync_playwright() as p:
             except Exception as exc:test(f"Browser {width} {route}",False,repr(exc))
         test(f"JavaScript errors {width}",len(js_errors)==0,str(js_errors[:3]))
         context.close()
+    # Clicking the real CTA must open the correct Hotlink. Intercept navigation;
+    # no purchase or third-party visit is performed by this test.
+    context=browser.new_context(viewport={"width":390,"height":844},locale="pt-BR")
+    context.route("**/go.hotmart.com/**",lambda route:route.fulfill(status=200,content_type="text/html",body="<title>Teste local de destino</title>"))
+    page=context.new_page()
+    for route in ["/","/leadlovers.html"]:
+        try:
+            page.goto(BASE+route,wait_until="domcontentloaded",timeout=35000)
+            with page.expect_popup(timeout=12000) as opened:
+                page.locator('.hero-actions a[data-affiliate="leadlovers"]').click()
+            popup=opened.value
+            popup.wait_for_load_state("domcontentloaded",timeout=12000)
+            test(f"Direct CTA navigation {route}",popup.url==HOTLINK,popup.url)
+            popup.close()
+        except Exception as exc:test(f"Direct CTA navigation {route}",False,repr(exc))
+    context.close()
+
     # Test consent with a fictitious GA4 ID intercepted only in this test browser.
     # Abort analytics network: no production GA4 data is ever sent.
     context=browser.new_context(viewport={"width":390,"height":844},locale="pt-BR")
