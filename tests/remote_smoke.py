@@ -68,6 +68,25 @@ with sync_playwright() as p:
             except Exception as exc:test(f"Browser {width} {route}",False,repr(exc))
         test(f"JavaScript errors {width}",len(js_errors)==0,str(js_errors[:3]))
         context.close()
+    # Test consent with a fictitious GA4 ID intercepted only in this test browser.
+    # Abort analytics network: no production GA4 data is ever sent.
+    context=browser.new_context(viewport={"width":390,"height":844},locale="pt-BR")
+    mock='window.CRIAI_CONFIG={ga4MeasurementId:"G-TEST123456",affiliateLinks:{leadlovers:"'+HOTLINK+'"}};'
+    context.route("**/assets/config.js",lambda route:route.fulfill(status=200,content_type="application/javascript",body=mock))
+    context.route("**/www.googletagmanager.com/**",lambda route:route.abort())
+    page=context.new_page()
+    try:
+        page.goto(BASE+"/",wait_until="domcontentloaded",timeout=35000)
+        test("Consent prompt",page.locator("#privacyConsent.show").count()==1)
+        test("No GA4 before consent",page.locator('script[src*="googletagmanager.com"]').count()==0)
+        page.locator('[data-consent="necessary"]').click()
+        test("No GA4 after reject",page.locator('script[src*="googletagmanager.com"]').count()==0)
+        page.locator('[data-open-privacy]').first.click()
+        test("Preferences reopen",page.locator("#privacyConsent.show").count()==1)
+        page.locator('[data-consent="analytics"]').click()
+        test("GA4 loaded after accept",page.locator('script[src*="googletagmanager.com"]').count()==1)
+    except Exception as exc:test("Consent simulation",False,repr(exc))
+    context.close()
     browser.close()
 
 (OUT/"remote-report.json").write_text(json.dumps({"timestamp_utc":time.strftime("%Y-%m-%dT%H:%M:%SZ",time.gmtime()),"checks":checks,"hotlink_network_only":affiliate,"errors":errors},ensure_ascii=False,indent=2),encoding="utf8")
