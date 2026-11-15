@@ -111,3 +111,16 @@ Antes de ativar anúncios pagos, conferir os requisitos de conteúdo original do
 - Obrigações fiscais pendentes: [Issue #3](https://github.com/rhianmello/criai/issues/3). Nenhum anúncio foi ativado.
 
 **Não interpretar testes unitários como homologação de segurança em produção ou ausência de dados como zero visitantes.**
+
+## Etapa 11 (15/11/2026) — Botões de conversão, consentimento e backend privado
+
+- **CTA no navegador do proprietário:** print mostrou botão final aparentemente oculto. Chromium limpo mostra botão normalmente (1440, 768, 390 e 320 px). Hipóteses incluem extensões e cache, mas causa não comprovada. [Issue #5](https://github.com/rhianmello/criai/issues/5).
+- Home e análise Leadlovers agora oferecem também links internos de navegação junto ao Hotlink final. Não mascarar destino nem contornar bloqueadores.
+- Consentimento GA4 preparado com cookies **somente no subdomínio CRIAÍ** (`cookie_domain:'none'`, `cookie_prefix:'criai'`), atualização ao revogar e relatório de privacidade. **GA4 real ainda não conectado**.
+- [104 verificações de navegador aprovadas](https://github.com/rhianmello/criai/actions/runs/43758367324) para layout, CTAs finais, vídeos e retirada de consentimento com ID fictício.
+- [PR #4 — backend privado em rascunho](https://github.com/rhianmello/criai/pull/4) com correção de data para São Paulo e [25 testes unitários aprovados](https://github.com/rhianmello/criai/actions/runs/43758637587). **Não implantado**.
+- Supabase: continuam sete tabelas do `criai_private` com RLS forçado e sem acesso de visitantes; nenhuma Edge Function CRIAÍ nem conta proprietária habilitada automaticamente.
+- [Relatório Etapa 11](docs/etapa11-relatorio.md) · [Prompt Etapa 12](prompts/etapa12.md).
+- [Pendência fiscal — Issue #3](https://github.com/rhianmello/criai/issues/3) ainda aberta.
+
+**Gate de publicidade ainda pendente:** falta GA4 exclusivo real, identificação e contato comercial, confirmação das obrigações fiscais e revisão da página pelo Google Ads.
