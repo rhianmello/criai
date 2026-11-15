@@ -73,6 +73,10 @@ with sync_playwright() as p:
                          final_cta.count()==1 and final_cta.is_visible() and
                          state_cta.get("width",0)>=140 and state_cta.get("height",0)>=35,
                          str(state_cta))
+                    backup=page.locator('.conversion-actions a.btn-outline')
+                    test(f"Secondary CTA accessible {width} {route}",
+                         backup.count()==1 and backup.is_visible() and
+                         backup.get_attribute('href') in ('leadlovers.html#avaliacao','#videos'))
 
                     mobile_bar=page.locator(".mobile-offer-bar")
                     test(f"Responsive CTA bar {width} {route}",mobile_bar.is_visible()==(width<=750))
@@ -147,6 +151,13 @@ with sync_playwright() as p:
             .filter(args=>args && args[0]==='event' && args[1]==='affiliate_click')
             .map(args=>args[2])""")
         test("Consent-only CTA placement event",any(x.get("cta_placement")=="hero" and x.get("product_id")=="hotmart_42903" for x in detail),str(detail))
+        settings=page.evaluate("""() => (window.dataLayer || []).filter(args=>args && args[0]==='config').map(args=>args[2])""")
+        test("GA4 cookies restricted to CRIAI",any(x.get('cookie_domain')=='none' and x.get('cookie_prefix')=='criai' for x in settings),str(settings))
+        page.locator('[data-open-privacy]').first.click()
+        with page.expect_navigation(wait_until="domcontentloaded",timeout=20000):
+            page.locator('[data-consent="necessary"]').click()
+        test("Consent withdrawal persisted",page.evaluate("localStorage.getItem('criai_analytics_consent_v2')")=="necessary")
+        test("No GA4 loaded after withdrawal",page.locator('script[src*="googletagmanager.com"]').count()==0)
 
     except Exception as exc:test("Consent simulation",False,repr(exc))
     context.close()
