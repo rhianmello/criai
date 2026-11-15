@@ -26,7 +26,7 @@ Data de verificação: 15/11/2026. Escopo: somente `rhianmello/criai`. Nenhuma a
 ## GA4 e painel privado
 
 - `ga4MeasurementId` segue **vazio** em `assets/config.js`, logo o CRIAÍ não coleta métricas GA4.
-- A conta analítica conectada ao assistente tem apenas a propriedade **XRMOVI** (ID 562156312). **Não reutilizar** no CRIAÍ.
+- A conta analítica conectada ao assistente tem apenas a propriedade **XRMOVI** (ID (ID omitido por isolamento entre projetos)). **Não reutilizar** no CRIAÍ.
 - Sem propriedade GA4 própria, não há validação de `page_view`, `view_item`, `select_content` e `affiliate_click` no DebugView.
 - A arquitetura de um painel gerencial privado está em `docs/painel-gerencial.md`; **não há dashboard implantado, autenticação configurada, banco de dados ou integração de receitas**.
 - Requer projeto/back-end isolado, autenticação de proprietário, controle de acesso server-side/RLS e segredo fora do GitHub Pages. Sem esses pré-requisitos, não divulgar um painel como seguro ou funcional.
