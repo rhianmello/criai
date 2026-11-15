@@ -16,7 +16,7 @@ function subtractDays(iso, number) {
 }
 function blank(name) {
   switch (name) {
-    case 'ga4': return {connection:'not_connected',last_synced:null,active_users:null,sessions:null,page_views:null,affiliate_clicks:null,channels:null};
+    case 'ga4': return {connection:'not_connected',last_synced:null,active_users:null,sessions:null,session_count_note:'Sessions require a non-duplicated session-level or landing-page aggregate',page_views:null,affiliate_clicks:null,channels:null};
     case 'google_ads':return {connection:'not_connected',last_synced:null,spend_brl:null,ad_clicks:null,campaigns:null};
     case 'hotmart':return {connection:'not_connected',last_synced:null,confirmed_commissions_brl:null,paid_commissions_brl:null,transactions:null};
   }
@@ -46,8 +46,8 @@ export function createOverviewReader({pgPool, getToday = todaySaoPaulo}) {
     for (const row of status.rows || []) {
       if (!sources.includes(row.source)) continue;
       const target = result.sources[row.source];
-      // Distinct active users are NOT additive across days/pages/channels.
-      // Keep active_users unknown until a GA4 period-level distinct-users report exists.
+      // Distinct users and sessions are NOT safely additive across page_path.
+      // Leave these fields unknown until a GA4 period-level aggregate exists.
       if (row.state !== 'connected' || !row.last_success_at) {
         target.connection = row.state === 'error' ? 'error' : 'not_connected';
         continue;
@@ -57,19 +57,19 @@ export function createOverviewReader({pgPool, getToday = todaySaoPaulo}) {
       if (row.source === 'ga4') {
         const [totals,channels] = await Promise.all([
           pgPool.query(
-            'SELECT count(*)::int records, sum(sessions) sessions, sum(page_views) page_views, sum(affiliate_clicks) affiliate_clicks FROM criai_private.traffic_daily WHERE provider = $1 AND day BETWEEN $2::date AND $3::date',
+            'SELECT count(*)::int records, sum(page_views) page_views, sum(affiliate_clicks) affiliate_clicks FROM criai_private.traffic_daily WHERE provider = $1 AND day BETWEEN $2::date AND $3::date',
             ['ga4',start,end]
           ),
           pgPool.query(
-            'SELECT channel, sum(sessions) sessions, sum(affiliate_clicks) affiliate_clicks FROM criai_private.traffic_daily WHERE provider = $1 AND day BETWEEN $2::date AND $3::date GROUP BY channel ORDER BY sum(sessions) DESC NULLS LAST LIMIT 15',
+            'SELECT channel, sum(affiliate_clicks) affiliate_clicks FROM criai_private.traffic_daily WHERE provider = $1 AND day BETWEEN $2::date AND $3::date GROUP BY channel ORDER BY sum(affiliate_clicks) DESC NULLS LAST LIMIT 15',
             ['ga4',start,end]
           )
         ]);
         const r = totals.rows?.[0];
         if (r && r.records > 0) {
-          for (const k of ['sessions','page_views','affiliate_clicks']) target[k] = numericalOrNull(r[k]);
+          for (const k of ['page_views','affiliate_clicks']) target[k] = numericalOrNull(r[k]);
           target.channels = (channels.rows || []).map(v=>({
-            channel:String(v.channel),sessions:numericalOrNull(v.sessions),affiliate_clicks:numericalOrNull(v.affiliate_clicks)
+            channel:String(v.channel),sessions:null,affiliate_clicks:numericalOrNull(v.affiliate_clicks)
           }));
         }
       } else if (row.source === 'google_ads') {
