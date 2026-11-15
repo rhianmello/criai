@@ -7,3 +7,51 @@
 a:focus-visible,button:focus-visible{outline:3px solid #2563eb;outline-offset:3px}
 
 .calculator-form{display:grid;gap:9px;align-items:start}.calculator-form h3{margin:0 0 8px;font-size:20px}.calculator-form label{font-size:13px;font-weight:750;color:#283a56;margin-top:10px}.calculator-form input,.calculator-form select{width:100%;min-height:44px;padding:10px 13px;color:#182442;background:#fff;border:1px solid #b6c6d9;border-radius:10px;font:inherit;font-size:15px}.calculator-form input:focus-visible,.calculator-form select:focus-visible{outline:3px solid #2563eb;outline-offset:2px}.calculator-form output{display:block;border-radius:13px;background:#edf6f3;color:#075c46;padding:16px;margin-top:14px;font-size:18px;font-weight:800}.calculator-form .calculator-note{font-size:12px;color:#596780;margin:3px 0 0}
+
+/* CRIAÍ — conversão clara e demos do produtor; sem banners externos quebrados. */
+.offer-cta-group{display:flex;flex-wrap:wrap;gap:11px;align-items:center;margin:20px 0 5px}
+.conversion-panel{display:flex;align-items:center;justify-content:space-between;gap:28px;background:#f1faf7;border:1px solid #cde9df;border-radius:24px;padding:32px 40px;box-shadow:0 9px 26px rgba(17,80,65,.045)}
+.criai-final-cta{padding-top:50px;padding-bottom:78px;background:#fff}
+.conversion-panel h2{font-size:clamp(25px,3vw,36px);margin:5px 0 10px;line-height:1.18}
+.conversion-panel p{margin:0;color:#47596f;max-width:600px;font-size:14px}
+.conversion-actions{display:flex;flex-direction:column;align-items:stretch;gap:7px;min-width:260px}
+.conversion-actions small{color:#60728a;text-align:center;font-size:11px}
+.videos-section{background:#fff}
+.demo-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:19px;margin-top:27px}
+.demo-card{overflow:hidden;border:1px solid #e1e9f2;border-radius:18px;background:#fff;box-shadow:0 9px 24px rgba(21,39,79,.035)}
+.demo-screen{height:198px;padding:20px;display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;position:relative;color:#fff;background:linear-gradient(135deg,#243d68,#a92468)}
+.demo-card-b .demo-screen{background:linear-gradient(135deg,#263358,#d22572)}
+.demo-card-c .demo-screen{background:linear-gradient(135deg,#253d61,#4d78a2)}
+.demo-card-d .demo-screen{background:linear-gradient(135deg,#152e48,#0c8a82)}
+.demo-card-e .demo-screen{background:linear-gradient(135deg,#35265c,#8c4890)}
+.demo-screen::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 86% 15%,rgba(255,255,255,.13) 0,transparent 44%);pointer-events:none}
+.demo-screen strong{font-size:clamp(19px,2vw,24px);line-height:1.16;letter-spacing:-.04em;max-width:230px;z-index:1}
+.demo-tag{font-size:10px;letter-spacing:.11em;font-weight:800;color:#f5f8ff;z-index:1}
+.demo-time{font-size:11px;color:#ecf3ff;z-index:1}
+.demo-play{position:absolute;left:50%;top:53%;transform:translate(-50%,-50%);width:64px;height:64px;border-radius:50%;background:#fff;color:#1e3458;border:0;box-shadow:0 9px 32px rgba(0,0,0,.23);z-index:3;font-size:22px;display:grid;place-items:center;padding-left:4px}
+.demo-play:hover{transform:translate(-50%,-50%) scale(1.07)}
+.demo-iframe{position:absolute;inset:0;width:100%;height:100%;border:0;z-index:5}
+.demo-screen.demo-active::before{display:none}
+.demo-caption{padding:18px 18px 20px}
+.demo-caption h3{font-size:16px;margin:0 0 7px;line-height:1.3}
+.demo-caption p{font-size:12.5px;color:#596780;margin:0 0 13px}
+.demo-caption a{font-size:12px;color:#176d62;text-decoration:underline;text-underline-offset:3px;font-weight:750}
+.video-cta{display:flex;justify-content:space-between;align-items:center;gap:25px;border:1px solid #b6dfd0;background:#f4fcf7;padding:23px 27px;border-radius:19px;margin-top:24px}
+.video-cta strong{font-size:18px}
+.video-cta p{font-size:13px;color:#4e5e73;margin:5px 0 0}
+.video-cta .btn{flex-shrink:0}
+.video-privacy-note{font-size:12px;color:#687990;margin:18px 0 0}
+.mobile-offer-bar{display:none}
+@media(max-width:980px){.demo-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.conversion-panel{padding:25px}}
+@media(max-width:750px){
+  .hero-actions .btn,.offer-cta-group .btn{width:100%}
+  .conversion-panel,.video-cta{flex-direction:column;align-items:stretch}
+  .conversion-actions{min-width:0}
+  .conversion-actions .btn,.video-cta .btn{width:100%}
+  .demo-grid{grid-template-columns:1fr;gap:15px}
+  .demo-screen{height:210px}
+  body.has-affiliate-bar{padding-bottom:86px}
+  .mobile-offer-bar{position:fixed;bottom:0;left:0;right:0;display:flex;align-items:center;justify-content:space-between;gap:11px;background:rgba(255,255,255,.97);border-top:1px solid #d5e2df;padding:11px 14px max(11px,env(safe-area-inset-bottom));z-index:90;box-shadow:0 -8px 28px rgba(10,29,51,.07)}
+  .mobile-offer-bar .btn{flex:1;max-width:77%;min-height:45px;padding:11px 12px;font-size:13px}
+  .mobile-offer-bar span{font-size:10px;line-height:1.25;color:#596780;max-width:23%}
+}
