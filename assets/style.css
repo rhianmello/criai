@@ -93,3 +93,22 @@ a:focus-visible,button:focus-visible{outline:3px solid #2563eb;outline-offset:3p
 .intent-cta-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:27px}
 @media(max-width:820px){.intent-grid{grid-template-columns:1fr 1fr}.intent-hero{padding-block:60px}.intent-home-grid{grid-template-columns:1fr}}
 @media(max-width:590px){.intent-grid{grid-template-columns:1fr}.intent-hero{padding-block:43px}.intent-main{padding-block:38px}.intent-card,.intent-summary,.intent-next,.intent-callout{padding:20px}.intent-table{min-width:480px}.intent-hero h1{font-size:clamp(32px,8vw,43px)}.intent-cta-row .btn{width:100%}}
+
+/* CRIAÍ — one-tap affiliate access, always visible without replacing editorial links. */
+.offer-fast-track{padding:20px 0;background:#edf9f3;border-block:1px solid #c4e8d7}
+.offer-fast-track-row{display:flex;align-items:center;justify-content:space-between;gap:22px}
+.offer-fast-track strong{display:block;font-size:17px;line-height:1.4;color:#153f36}
+.offer-fast-track p{margin:4px 0 0;font-size:13px;color:#41665b;max-width:690px}
+.offer-fast-track .btn{flex:0 0 auto;min-height:46px}
+.quick-buy-dock{position:fixed;right:20px;bottom:19px;z-index:95;width:min(340px,calc(100vw - 40px));background:#fff;border:1px solid #c6e4d7;border-radius:17px;box-shadow:0 12px 42px rgba(16,44,60,.18);padding:14px 16px;display:flex;flex-direction:column;gap:7px}
+.quick-buy-caption{font-size:10px;letter-spacing:.06em;font-weight:850;color:#245c48}
+.quick-buy-dock .quick-buy-button{display:flex;width:100%;padding:12px 14px;min-height:46px;font-size:13px}
+.quick-buy-dock small{font-size:10px;color:#56687b;line-height:1.4}
+.video-hotmart-link{display:block;margin-top:12px;font-size:13px;color:#056d4a;text-decoration:underline;text-underline-offset:3px;font-weight:800}
+@media(max-width:750px){
+ .quick-buy-dock{display:none}
+ .offer-fast-track-row{flex-direction:column;align-items:stretch;gap:13px}
+ .offer-fast-track{padding:18px 0}
+ .offer-fast-track .btn{width:100%}
+ .mobile-offer-bar .btn{max-width:80%;font-weight:850}
+}
