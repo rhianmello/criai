@@ -7,6 +7,6 @@ window.CRIAI_CONFIG = Object.freeze({
   // Instale o Google Analytics 4 somente após obter seu Measurement ID real.
   // Enquanto vazio, o site não faz nenhuma coleta analítica.
   ga4MeasurementId: '',
-  // Domínio planejado (DNS ainda depende de configuração independente).
-  canonicalBase: 'https://criar.xrmovi.com.br'
+  // Domínio oficial publicado no GitHub Pages; a disponibilidade externa deve ser testada.
+  canonicalBase: 'https://criai.xrmovi.com.br'
 });
