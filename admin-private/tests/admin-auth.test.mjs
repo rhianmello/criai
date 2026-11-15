@@ -12,9 +12,10 @@ const deps={
   verifyToken:async t=>t==='bad' ? null : {verified:true,claims:{
     sub:t==='outsider'?outsider:owner,
     iss:issuer,aud:'authenticated',aal:t==='aal1'?'aal1':'aal2',
-    exp:t==='expired'?900:1200,is_anonymous:t==='anonymous'
+    exp:t==='expired'?900:1200,is_anonymous:t==='anonymous',session_id:'10000000-0000-4000-8000-000000000001'
   }},
   fetchCurrentUser:async t=>t==='revoked'?null:{id:t==='outsider'?outsider:owner},
+  isActiveSession:async (sessionId,userId)=>userId===owner && sessionId==='10000000-0000-4000-8000-000000000001',
   isApprovedOwner:async id=>id===owner
 };
 const auth=(token,overrides={})=>authorizeAdmin(token?'Bearer '+token:null,{...deps,...overrides});
@@ -24,6 +25,8 @@ test('expired JWT 401',async()=>assert.rejects(auth('expired'),{status:401}));
 test('revoked session check 401',async()=>assert.rejects(auth('revoked'),{status:401}));
 test('MFA aal1 403',async()=>assert.rejects(auth('aal1'),{status:403,code:'MFA_REQUIRED'}));
 test('other user 403',async()=>assert.rejects(auth('outsider'),{status:403,code:'OWNER_ONLY'}));
+test('revoked session 401',async()=>assert.rejects(auth('owner',{isActiveSession:async()=>false}),{status:401,code:'SESSION_REVOKED'}));
+test('session backend unreachable fails closed',async()=>assert.rejects(auth('owner',{isActiveSession:async()=>{throw Error('unavailable')}}),{status:503}));
 test('anonymous user 403',async()=>assert.rejects(auth('anonymous'),{status:403}));
 test('incorrect issuer 401',async()=>assert.rejects(auth('owner',{expectedIssuer:'https://wrong.example/auth/v1'}),{status:401}));
 test('incorrect audience 401',async()=>assert.rejects(auth('owner',{expectedAudience:'other'}),{status:401}));
