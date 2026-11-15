@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {authorizeAdmin} from '../src/auth.mjs';
 import {createAdminHandler} from '../src/handler.mjs';
-import {createOverviewReader} from '../src/overview.mjs';
+import {createOverviewReader,todaySaoPaulo} from '../src/overview.mjs';
 import {makeSupabaseDependencies} from '../src/supabase-adapter.mjs';
 
 const owner='00000000-0000-4000-8000-000000000001';
@@ -65,6 +65,10 @@ test('period must be a valid 7, 28 or 90-day value',async()=>{
  assert.equal((await handler()(req('owner','?days=90'))).status,200);
 });
 
+test('reporting date uses Sao Paulo timezone regardless of locale',()=>{
+  assert.equal(todaySaoPaulo(new Date('2026-11-16T01:30:00Z')),'2026-11-15');
+  assert.equal(todaySaoPaulo(new Date('2026-11-15T15:00:00Z')),'2026-11-15');
+});
 test('reader returns disconnected sources and null metrics without sync rows',async()=>{
  let calls=0;
  const reader=createOverviewReader({pgPool:{query:async()=>{calls++;return {rows:[]}}},getToday:()=> '2026-11-15'});
