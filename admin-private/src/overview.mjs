@@ -40,6 +40,8 @@ export function createOverviewReader({pgPool, getToday = () => new Intl.DateTime
     for (const row of status.rows || []) {
       if (!sources.includes(row.source)) continue;
       const target = result.sources[row.source];
+      // Distinct active users are NOT additive across days/pages/channels.
+      // Keep active_users unknown until a GA4 period-level distinct-users report exists.
       if (row.state !== 'connected' || !row.last_success_at) {
         target.connection = row.state === 'error' ? 'error' : 'not_connected';
         continue;
@@ -49,7 +51,7 @@ export function createOverviewReader({pgPool, getToday = () => new Intl.DateTime
       if (row.source === 'ga4') {
         const [totals,channels] = await Promise.all([
           pgPool.query(
-            'SELECT count(*)::int records, sum(active_users) active_users, sum(sessions) sessions, sum(page_views) page_views, sum(affiliate_clicks) affiliate_clicks FROM criai_private.traffic_daily WHERE provider = $1 AND day BETWEEN $2::date AND $3::date',
+            'SELECT count(*)::int records, sum(sessions) sessions, sum(page_views) page_views, sum(affiliate_clicks) affiliate_clicks FROM criai_private.traffic_daily WHERE provider = $1 AND day BETWEEN $2::date AND $3::date',
             ['ga4',start,end]
           ),
           pgPool.query(
@@ -59,7 +61,7 @@ export function createOverviewReader({pgPool, getToday = () => new Intl.DateTime
         ]);
         const r = totals.rows?.[0];
         if (r && r.records > 0) {
-          for (const k of ['active_users','sessions','page_views','affiliate_clicks']) target[k] = numericalOrNull(r[k]);
+          for (const k of ['sessions','page_views','affiliate_clicks']) target[k] = numericalOrNull(r[k]);
           target.channels = (channels.rows || []).map(v=>({
             channel:String(v.channel),sessions:numericalOrNull(v.sessions),affiliate_clicks:numericalOrNull(v.affiliate_clicks)
           }));
