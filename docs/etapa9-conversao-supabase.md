@@ -29,7 +29,7 @@ O HTML de banner mostrado na própria Hotmart exibia `https://go.hotmart.com/O10
 
 - O usuário autorizou explicitamente na Etapa 9 utilizar **o projeto Supabase existente do XRMOVI** para consultas do CRIAÍ, em vez de provisionar novo projeto.
 - Criado esquema privado `criai_private`, com tabelas `offer_catalog`, `daily_metrics`, `commissions` e `sync_status`.
-- Gravada apenas a oferta Leadlovers / produto 42903, Hotlink e status `pending_confirmation`. **Sem dados artificiais de métricas, cliques ou comissões.**
+- Gravada apenas a oferta Leadlovers / produto 42903, Hotlink e status `verified_in_hotmart`, após comparação visual com HTML de divulgação mostrado na Hotmart. Isso **não comprova venda nem comissão creditada**. Sem dados artificiais de métricas, cliques ou comissões.
 - Todas as quatro tabelas têm RLS habilitado e forçado. Nem `anon` nem `authenticated` possuem `USAGE` no schema ou `SELECT` nas tabelas. Validação SQL e advisors conferidos.
 - **Isolamento é lógico, não físico.** Os sistemas compartilham infraestrutura, recursos, configurações e risco operacional do mesmo Supabase; não anunciar isolamento absoluto. Nenhuma tabela ou regra do XRMOVI foi alterada.
 - **Nenhuma API privada nem painel conectados.** Consultas futuras requerem serviço autorizado no servidor, autorização de proprietário e regras de acesso auditadas, sem chave privilegiada no GitHub Pages.
