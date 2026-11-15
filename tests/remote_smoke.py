@@ -108,20 +108,19 @@ with sync_playwright() as p:
             except Exception as exc:test(f"Browser {width} {route}",False,repr(exc))
         test(f"JavaScript errors {width}",len(js_errors)==0,str(js_errors[:3]))
         context.close()
-    # Clicking the real CTA must open the correct Hotlink. Intercept navigation;
-    # no purchase or third-party visit is performed by this test.
+    # The one-click offer link navigates in the same tab. Test only via a
+    # stubbed Hotmart response: no real third-party page or purchase.
     context=browser.new_context(viewport={"width":390,"height":844},locale="pt-BR")
     context.route("**/go.hotmart.com/**",lambda route:route.fulfill(status=200,content_type="text/html",body="<title>Teste local de destino</title>"))
     page=context.new_page()
     for route in ["/","/leadlovers.html"]:
         try:
             page.goto(BASE+route,wait_until="domcontentloaded",timeout=35000)
-            with page.expect_popup(timeout=12000) as opened:
-                page.locator('.hero-actions a[data-affiliate="leadlovers"]').click()
-            popup=opened.value
-            popup.wait_for_load_state("domcontentloaded",timeout=12000)
-            test(f"Direct CTA navigation {route}",popup.url==HOTLINK,popup.url)
-            popup.close()
+            link=page.locator('.hero-actions a[data-affiliate="leadlovers"]')
+            test(f"Same-tab affiliate CTA {route}",link.get_attribute("target") in (None,"_self"))
+            with page.expect_navigation(wait_until="domcontentloaded",timeout=12000):
+                link.click()
+            test(f"Direct CTA navigation {route}",page.url==HOTLINK,page.url)
         except Exception as exc:test(f"Direct CTA navigation {route}",False,repr(exc))
     context.close()
 
@@ -163,11 +162,11 @@ with sync_playwright() as p:
         test("Preferences reopen",page.locator("#privacyConsent.show").count()==1)
         page.locator('[data-consent="analytics"]').click()
         test("GA4 loaded after accept",page.locator('script[src*="googletagmanager.com"]').count()==1)
-        # Intercept the Hotmart popup: verify event after consent without real visit/purchase.
-        context.route("**/go.hotmart.com/**",lambda route:route.fulfill(status=200,content_type="text/html",body="<title>QA stub</title>"))
-        with page.expect_popup(timeout=12000) as popped:
-            page.locator('.hero-actions a[data-affiliate="leadlovers"]').first.click()
-        popped.value.close()
+        # Keep the link in the page for this check only: verify click event
+        # without navigating away or sending data to a real third party.
+        link=page.locator('.hero-actions a[data-affiliate="leadlovers"]').first
+        link.evaluate("el => el.addEventListener('click', ev => ev.preventDefault(), {capture: true})")
+        link.click()
         detail=page.evaluate("""() => (window.dataLayer || [])
             .filter(args=>args && args[0]==='event' && args[1]==='affiliate_click')
             .map(args=>args[2])""")
