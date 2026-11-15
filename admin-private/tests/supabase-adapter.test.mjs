@@ -18,6 +18,9 @@ test('queries isolated private owner table with parameterized ID',async()=>{
   assert.equal(await d.isApprovedOwner('uid'),true);
   assert.ok(sql.includes('criai_private.owner_access WHERE user_id = $1'));
   assert.deepEqual(args,['uid']);
+  assert.equal(await d.isActiveSession('session-id','uid'),true);
+  assert.ok(sql.includes('auth.sessions WHERE id = $1::uuid AND user_id = $2::uuid'));
+  assert.deepEqual(args,['session-id','uid']);
 });
 test('missing owner denies',async()=>{
  const d=makeSupabaseAuthDependencies({authClient,pgPool:{query:async()=>({rows:[]})},projectUrl:'https://criai-ref.supabase.co'});
