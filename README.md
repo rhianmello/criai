@@ -99,3 +99,15 @@ Antes de ativar anúncios pagos, conferir os requisitos de conteúdo original do
 - **GA4 ainda desativado**; não afirmar que os cliques reais estão sendo contabilizados em painel.
 - [Relatório Etapa 9](docs/etapa9-conversao-supabase.md) · [Prompt Etapa 10](prompts/etapa10.md).
 - [NFS-e e relatório mensal pendentes — Issue #3](https://github.com/rhianmello/criai/issues/3). Não há lembrete automático agendado (limite de cinco tarefas atingido).
+
+## Etapa 10 — métricas e administração (15/11/2026)
+
+- Evento affiliate_click recebeu cta_placement, com consentimento obrigatório. GA4 do CRIAÍ ainda NÃO configurado.
+- [85 verificações reais do site](https://github.com/rhianmello/criai/actions/runs/43756802688) aprovadas em desktop/tablet/mobile, incluindo teste de consentimento com ID fictício.
+- No Supabase já compartilhado com XRMOVI, o schema privado criai_private contém sete tabelas e nenhuma liberação de leitura pública. Novas tabelas criadas: owner_access, traffic_daily e ads_daily. Nenhuma fonte real conectada.
+- [PR #4 (rascunho)](https://github.com/rhianmello/criai/pull/4): API PRIVADA apenas preparada, não implantada, [24 testes unitários aprovados](https://github.com/rhianmello/criai/actions/runs/43756922025).
+- PR #1 antigo fechado sem merge porque seu SQL não corresponde ao banco real.
+- [Relatório Etapa 10](docs/etapa10-relatorio.md) · [Prompt Etapa 11](prompts/etapa11.md).
+- Obrigações fiscais pendentes: [Issue #3](https://github.com/rhianmello/criai/issues/3). Nenhum anúncio foi ativado.
+
+**Não interpretar testes unitários como homologação de segurança em produção ou ausência de dados como zero visitantes.**
