@@ -7,7 +7,7 @@ export class AdminAccessError extends Error {
 const deny = (status, code) => { throw new AdminAccessError(status, code); };
 
 export async function authorizeAdmin(header, {
-  verifyToken, fetchCurrentUser, isApprovedOwner, expectedIssuer,
+  verifyToken, fetchCurrentUser, isActiveSession, isApprovedOwner, expectedIssuer,
   expectedAudience = 'authenticated', nowSeconds = () => Math.floor(Date.now() / 1000)
 }) {
   if (typeof header !== 'string') deny(401, 'MISSING_BEARER_TOKEN');
@@ -18,7 +18,7 @@ export async function authorizeAdmin(header, {
   catch (_) { deny(401, 'TOKEN_VERIFICATION_FAILED'); }
   if (!verified || verified.verified !== true || !verified.claims) deny(401, 'UNVERIFIED_TOKEN');
   const claims = verified.claims;
-  if (!claims.sub || typeof claims.exp !== 'number' || claims.exp <= nowSeconds()) deny(401, 'EXPIRED_OR_INVALID_TOKEN');
+  if (!claims.sub || !claims.session_id || typeof claims.exp !== 'number' || claims.exp <= nowSeconds()) deny(401, 'EXPIRED_OR_INVALID_TOKEN');
   if (expectedIssuer && claims.iss !== expectedIssuer) deny(401, 'WRONG_ISSUER');
   if (claims.aud !== expectedAudience) deny(401, 'WRONG_AUDIENCE');
   if (claims.is_anonymous === true) deny(403, 'ANONYMOUS_NOT_ALLOWED');
@@ -27,6 +27,11 @@ export async function authorizeAdmin(header, {
   try { user = await fetchCurrentUser(m[1]); }
   catch (_) { deny(401, 'USER_VERIFICATION_FAILED'); }
   if (!user || user.id !== claims.sub) deny(401, 'USER_MISMATCH');
+  if (typeof isActiveSession !== 'function') deny(503, 'SESSION_STORE_UNAVAILABLE');
+  let sessionActive;
+  try { sessionActive = await isActiveSession(claims.session_id, claims.sub); }
+  catch (_) { deny(503, 'SESSION_STORE_UNAVAILABLE'); }
+  if (sessionActive !== true) deny(401, 'SESSION_REVOKED');
   if (claims.aal !== 'aal2') deny(403, 'MFA_REQUIRED');
 
   let approved;
