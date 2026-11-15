@@ -112,3 +112,18 @@ a:focus-visible,button:focus-visible{outline:3px solid #2563eb;outline-offset:3p
  .offer-fast-track .btn{width:100%}
  .mobile-offer-bar .btn{max-width:80%;font-weight:850}
 }
+
+/* Compra explícita: único caminho comercial destacado, sem redirecionamento encoberto. */
+.purchase-topline{background:#e9f8f0;border-bottom:2px solid #9edcc1;padding:13px 0}
+.purchase-topline-inner{display:flex;align-items:center;gap:18px;justify-content:space-between}
+.purchase-topline-copy{display:flex;flex-direction:column;max-width:630px;line-height:1.4}
+.purchase-topline-copy strong{color:#174c39;font-size:17px;font-weight:850}
+.purchase-topline-copy span{color:#385d50;font-size:12.5px;margin-top:3px}
+.purchase-main-button{font-weight:900;letter-spacing:.012em;white-space:nowrap;min-height:49px;background:#087548;color:white;box-shadow:0 5px 20px rgba(7,115,79,.2)}
+.purchase-main-button:hover{background:#045b39}
+.quick-buy-dock .quick-buy-button{font-weight:850}
+.nav-actions a[data-affiliate="leadlovers"]{background:#087548;color:white;border:1px solid #065d3c;box-shadow:none;max-width:290px}
+.nav-actions a[data-affiliate="leadlovers"]:hover{background:#065d3c}
+@media(max-width:990px){.purchase-topline-inner{gap:10px}.purchase-topline-copy span{font-size:11.5px}.purchase-main-button{white-space:normal;max-width:280px;font-size:12.5px}}
+@media(max-width:750px){.purchase-topline{padding:11px 0}.purchase-topline-inner{display:flex;flex-direction:column;align-items:stretch;gap:9px}.purchase-topline-copy strong{font-size:14px}.purchase-topline-copy span{font-size:11px}.purchase-main-button{max-width:none;width:100%;min-height:47px;font-size:13px}.mobile-offer-bar .btn{font-size:12px;line-height:1.25;letter-spacing:-.015em}.nav-actions a[data-affiliate="leadlovers"]{font-size:11px;padding:9px 12px;max-width:230px}}
+@media(max-width:360px){.purchase-main-button{font-size:12px}.mobile-offer-bar .btn{font-size:11px}}
