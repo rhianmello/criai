@@ -69,7 +69,7 @@ Antes de ativar anúncios pagos, conferir os requisitos de conteúdo original do
 ## Etapa 7 — verificação de produção e preparação de integrações (15/11/2026)
 
 - Lighthouse da oferta Leadlovers realizado no GitHub Actions: **mobile 88/96/100/100** e **desktop 100/96/100/100** (performance/acessibilidade/boas práticas/SEO). [Execução com relatórios brutos](https://github.com/rhianmello/criai/actions/runs/43751040687). Métricas de laboratório, não tráfego real.
-- GA4 CRIAÍ **não conectado**. Não reutilizar propriedade do XRMOVI (ID 562156312).
+- GA4 CRIAÍ **não conectado**. Não reutilizar propriedade do XRMOVI (ID (ID omitido por isolamento entre projetos)).
 - Hotlink redireciona, mas titularidade não confirmada por cópia direta da Hotmart e não houve transação.
 - **Admin privado não implantado:** esquema preliminar em [PR de rascunho #1](https://github.com/rhianmello/criai/pull/1), sem projeto separado, login, MFA ou dados.
 - Regras para futura campanha somente documentadas: [docs/ads-etapa7.md](docs/ads-etapa7.md). Nenhuma campanha criada, nem negativas aplicadas em conta Google Ads.
