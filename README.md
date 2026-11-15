@@ -55,3 +55,13 @@ Antes de ativar anúncios pagos, conferir os requisitos de conteúdo original do
 7. Somente após esses testes, planejar a ativação de campanhas.
 
 **Importante:** GitHub Pages é site estático público. Nunca gravar chaves, dados pessoais de visitantes, segredos ou dashboard administrativo sensível neste repositório.
+
+## Etapa 6 (15/11/2026) — homologação em produção
+
+- **48 testes externos passaram**, nenhum erro: site, quatro páginas, assets, HTTPS, 1440/768/390/320 px, menu mobile, botões, simulador de assinatura e consentimento analítico com ID fictício (nenhum dado GA enviado). Evidências: https://github.com/rhianmello/criai/actions/runs/43749802506
+- Acesse o relatório técnico: [docs/etapa6-homologacao.md](docs/etapa6-homologacao.md).
+- Hotlink HTTP 302 redireciona para `llovers.com.br/?sck=afill&ref=O108508884T`; isso **não comprova titularidade do afiliado nem atribuição comercial**.
+- **GA4 CRIAÍ não configurado**: campo Measurement ID segue em branco. A propriedade GA4 conectada do XRMOVI não deve ser reutilizada.
+- **Painel administrativo ainda não implantado**: aguardando backend isolado e autenticação segura; não usar GitHub Pages para dados privados.
+- Não houve anúncio pago, venda, pagamento nem alteração no XRMOVI.
+- [Prompt completo para Etapa 7](prompts/etapa7.md).
