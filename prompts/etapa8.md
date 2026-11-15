@@ -18,7 +18,7 @@ Atue como engenheiro de software sênior responsável exclusivamente pelo CRIAÍ
 - Documentos `docs/ga4-etapa7.md` e `docs/ads-etapa7.md` com checklist sem nenhuma campanha ativada.
 - Rodapé revisado para não chamar URL genérica de produto específico.
 - Rascunho seguro de dados do painel em PR #1, branch `feature/etapa7-backend-privado`; **não foi implantado**.
-- GA4 existente conectado é apenas XRMOVI propriedade 562156312; não usar.
+- GA4 existente conectado é apenas XRMOVI propriedade (ID omitido por isolamento entre projetos); não usar.
 
 ## Objetivos da Etapa 8
 
@@ -31,7 +31,7 @@ Atue como engenheiro de software sênior responsável exclusivamente pelo CRIAÍ
 7. **QA**: rodar testes GitHub Pages, Lighthouse e regressões de analytics/segurança; documentar links de execuções e commits.
 
 ## Regras
-- Não alterar XRMOVI nem propriedade GA4 562156312.
+- Não alterar XRMOVI nem propriedade GA4 (ID omitido por isolamento entre projetos).
 - Não inventar Hotlinks, e-mails, identificadores, métricas, usuários ou pagamentos.
 - Não expor tokens, chaves, service_role ou dados pessoais no repositório público.
 - Não realizar compras, cobranças ou gastos.
