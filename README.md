@@ -89,3 +89,13 @@ Antes de ativar anúncios pagos, conferir os requisitos de conteúdo original do
 - Não existe campanha ativa do CRIAÍ, nem métricas reais, pagamentos ou comissões comprovados.
 
 **Regra de isolamento:** não usar recursos ou credenciais do XRMOVI para operar o CRIAÍ.
+
+## Etapa 9 — Links de afiliado claros e vídeos oficiais
+
+- Site publicado com CTAs diretos para a Leadlovers na home, análise, navegação e barra fixa mobile. Os links usam `https://go.hotmart.com/O108508884T` e `rel=sponsored`.
+- Cinco vídeos oferecidos pelo produtor na área de materiais da Hotmart estão na página da Leadlovers em cartões: player do YouTube é carregado **só após clique**, reduzindo carregamentos externos automáticos.
+- [84 testes externos aprovados, 0 falhas](https://github.com/rhianmello/criai/actions/runs/43754899585): resoluções 1440, 768, 390, 320 px; menu, botões, vídeos e clique dos CTAs.
+- A pedido do proprietário, foi criado o schema `criai_private` com quatro tabelas no projeto Supabase pré-existente (infraestrutura compartilhada). RLS fechado e sem acesso direto de visitantes. Nenhum dado de venda simulado.
+- **GA4 ainda desativado**; não afirmar que os cliques reais estão sendo contabilizados em painel.
+- [Relatório Etapa 9](docs/etapa9-conversao-supabase.md) · [Prompt Etapa 10](prompts/etapa10.md).
+- [NFS-e e relatório mensal pendentes — Issue #3](https://github.com/rhianmello/criai/issues/3). Não há lembrete automático agendado (limite de cinco tarefas atingido).
