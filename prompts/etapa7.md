@@ -14,7 +14,7 @@ Atue como engenheiro sênior responsável apenas pelo CRIAÍ.
 - 48 testes externos de HTTPS, páginas, CSS/JS, quatro tamanhos, links e simulador de custo aprovados, zero falhas.
 - Redirecionamento GET do Hotlink: HTTP 302 para `https://llovers.com.br/?sck=afill&ref=O108508884T`. O código `ref` está presente, mas **não comprova atribuição nem titularidade**.
 - Fluxo de consentimento GA4 aprovado com Measurement ID fictício e rede analítica interceptada; **não há GA4 real instalado**.
-- A única propriedade GA4 conectada atualmente pertence ao XRMOVI (562156312). Não a reutilize.
+- A única propriedade GA4 conectada atualmente pertence ao XRMOVI ((ID omitido por isolamento entre projetos)). Não a reutilize.
 - Site possui análise independente, simulação financeira local e identificação de afiliação.
 - Relatório em `docs/etapa6-homologacao.md`; arquitetura do painel em `docs/painel-gerencial.md`.
 
