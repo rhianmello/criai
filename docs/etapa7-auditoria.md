@@ -20,7 +20,7 @@ Data: 15/11/2026. Alterações limitadas a `rhianmello/criai`.
 - **Pendente:** URL textual copiada diretamente do botão Hotmart “Copiar link”. Não houve login no painel nem compra.
 
 ### Google Analytics 4
-- Conector de GA4 conferido: somente propriedade **XRMOVI**, ID **562156312**.
+- Conector de GA4 conferido: somente propriedade **XRMOVI**, ID **(ID omitido por isolamento entre projetos)**.
 - Não houve identificação de propriedade específica CRIAÍ nem permissão de criação de propriedades pela conexão de leitura disponível.
 - `assets/config.js` mantém `ga4MeasurementId: ''`; nenhum dado real de visitantes/eventos chegou ao GA4 do CRIAÍ.
 - Fluxo de consentimento havia passado em teste com ID **fictício e requests bloqueadas**. DebugView real continua pendente.
