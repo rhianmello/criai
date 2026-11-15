@@ -1,6 +1,6 @@
 # CRIAÍ — GA4 exclusivo: instruções e estado real (Etapa 7)
 
-**Estado constatado:** o conector de Google Analytics 4 disponível possui apenas a propriedade **XRMOVI, ID 562156312**. Não existe no conector uma propriedade CRIAÍ identificável. O arquivo `assets/config.js` continua com `ga4MeasurementId: ''`. **Dados de visitantes, cliques e vendas do CRIAÍ não estão sendo coletados pelo GA4.**
+**Estado constatado:** o conector de Google Analytics 4 disponível possui apenas a propriedade **XRMOVI, ID (ID omitido por isolamento entre projetos)**. Não existe no conector uma propriedade CRIAÍ identificável. O arquivo `assets/config.js` continua com `ga4MeasurementId: ''`. **Dados de visitantes, cliques e vendas do CRIAÍ não estão sendo coletados pelo GA4.**
 
 ## Configuração externa necessária
 
