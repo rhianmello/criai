@@ -124,3 +124,15 @@ Antes de ativar anúncios pagos, conferir os requisitos de conteúdo original do
 - [Pendência fiscal — Issue #3](https://github.com/rhianmello/criai/issues/3) ainda aberta.
 
 **Gate de publicidade ainda pendente:** falta GA4 exclusivo real, identificação e contato comercial, confirmação das obrigações fiscais e revisão da página pelo Google Ads.
+
+## Etapa 12 (15/11/2026) — Métricas de CTA e integração bloqueada
+
+- [Relatório Etapa 12](docs/etapa12-relatorio.md) · [Checklist GA4](docs/etapa12-ga4-ativacao.md) · [Preflight Google Ads](docs/etapa12-ads-preflight.md) · [Prompt Etapa 13](prompts/etapa13.md).
+- O Supabase compartilhado contém **oito tabelas somente em `criai_private`**; nova tabela `affiliate_cta_daily` preparada para cliques GA4 por CTA/canal/dispositivo, sem dados fictícios, com RLS forçado e sem leitura por visitantes.
+- [PR #4](https://github.com/rhianmello/criai/pull/4) segue rascunho e **não implantado**; corrigido risco de somar sessões/usuários GA4 entre páginas. Agregação por posição de botão preparada. [25 testes aprovados](https://github.com/rhianmello/criai/actions/runs/43760246634).
+- GA4 exclusivo CRIAÍ não criado/conectado; `ga4MeasurementId` vazio. Propriedade XRMOVI não usada.
+- Sem dados reais sincronizados de visitantes, despesas ou comissões; nenhum proprietário cadastrado com MFA real nem endpoint administrativo.
+- Política Leadlovers revalidada: NFS-e + relatório mensal, recorrência no máximo um ano e restrições em mídia paga. [Issue fiscal #3](https://github.com/rhianmello/criai/issues/3) e [CTA no navegador #5](https://github.com/rhianmello/criai/issues/5) continuam abertas.
+- Nenhum anúncio, gasto, compra ou mudança no XRMOVI foi realizado.
+
+**Não confundir CI aprovado com segurança homologada em produção; não interpretar falta de dados como ausência de visitantes ou vendas.**
