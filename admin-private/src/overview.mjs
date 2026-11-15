@@ -21,9 +21,15 @@ function blank(name) {
     case 'hotmart':return {connection:'not_connected',last_synced:null,confirmed_commissions_brl:null,paid_commissions_brl:null,transactions:null};
   }
 }
-export function createOverviewReader({pgPool, getToday = () => new Intl.DateTimeFormat('en-CA', {
-  timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit'
-}).format(new Date())}) {
+export function todaySaoPaulo(date = new Date()) {
+  // Intl formatToParts is stable regardless of locale ordering.
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit'
+  }).formatToParts(date);
+  const get = type => parts.find(part => part.type === type)?.value;
+  return [get('year'),get('month'),get('day')].join('-');
+}
+export function createOverviewReader({pgPool, getToday = todaySaoPaulo}) {
   if (!pgPool || typeof pgPool.query !== 'function') throw new TypeError('Server-only Postgres pool is required');
   return async function getOverview(days = 28) {
     if (!validDays.includes(days)) throw new RangeError('INVALID_PERIOD');
