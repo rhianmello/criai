@@ -28,7 +28,7 @@ test('other user 403',async()=>assert.rejects(auth('outsider'),{status:403,code:
 test('revoked session 401',async()=>assert.rejects(auth('owner',{isActiveSession:async()=>false}),{status:401,code:'SESSION_REVOKED'}));
 test('session backend unreachable fails closed',async()=>assert.rejects(auth('owner',{isActiveSession:async()=>{throw Error('unavailable')}}),{status:503}));
 test('anonymous user 403',async()=>assert.rejects(auth('anonymous'),{status:403}));
-test('incorrect issuer 401',async()=>assert.rejects(auth('owner',{expectedIssuer:'https://wrong.example/auth/v1'}),{status:401}));
+test('incorrect issuer 401',async()=>assert.rejects(auth('owner',{expectedIssuer:'https://wrong-project.supabase.co/auth/v1'}),{status:401}));
 test('missing issuer fails closed',async()=>assert.rejects(auth('owner',{expectedIssuer:undefined}),{status:503,code:'ISSUER_NOT_CONFIGURED'}));
 test('incorrect audience 401',async()=>assert.rejects(auth('owner',{expectedAudience:'other'}),{status:401}));
 test('missing allowlist backend fails closed 503',async()=>assert.rejects(auth('owner',{isApprovedOwner:async()=>{throw new Error('db down')}}),{status:503}));
