@@ -22,6 +22,13 @@ export function makeSupabaseAuthDependencies({authClient,pgPool,projectUrl,nowSe
       if (error || !data?.user) return null;
       return data.user;
     },
+    isActiveSession: async (sessionId, userId) => {
+      const {rows} = await pgPool.query(
+        'SELECT EXISTS (SELECT 1 FROM auth.sessions WHERE id = $1::uuid AND user_id = $2::uuid) AS active',
+        [sessionId, userId]
+      );
+      return rows?.[0]?.active === true;
+    },
     isApprovedOwner: async userId => {
       const {rows} = await pgPool.query(
         'SELECT active FROM criai_private.owner_access WHERE user_id = $1 LIMIT 1',
