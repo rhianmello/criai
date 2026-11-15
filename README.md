@@ -78,3 +78,14 @@ Antes de ativar anúncios pagos, conferir os requisitos de conteúdo original do
 - [Prompt da Etapa 8](prompts/etapa8.md).
 
 **Gate comercial permanece pendente** até verificar Hotlink e conta, GA4 exclusivo, identificação e contato reais, links exigidos pelo produtor e emissão de NFS-e/relatórios.
+
+## Etapa 8 (15/11/2026) — integração bloqueada por dependências externas
+
+- [Relatório da Etapa 8](docs/etapa8-relatorio.md): verificação do GA4, Hotmart, regras comerciais e backend independente.
+- [PR #1](https://github.com/rhianmello/criai/pull/1): protótipo de autorização/estrutura privada, **não mesclado nem implantado**. Testes de autorização são simulados, não segurança homologada em banco real.
+- [Issue #2](https://github.com/rhianmello/criai/issues/2): checklist das dependências externas para liberação de anúncios.
+- [Prompt Etapa 9](prompts/etapa9.md): continuidade com dados reais e autorização de serviço isolado.
+- GA4 exclusivo CRIAÍ e backend separado ainda **não existem**; Hotlink precisa ser comparado com texto copiado da Hotmart.
+- Não existe campanha ativa do CRIAÍ, nem métricas reais, pagamentos ou comissões comprovados.
+
+**Regra de isolamento:** não usar recursos ou credenciais do XRMOVI para operar o CRIAÍ.
