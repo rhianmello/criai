@@ -1,0 +1,36 @@
+name: CRIAI Lighthouse production audit
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/lighthouse.yml'
+      - 'tests/lighthouse_summary.mjs'
+permissions:
+  contents: read
+jobs:
+  lighthouse:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install Lighthouse
+        run: npm install --no-save --no-package-lock lighthouse@13.5.0
+      - name: Inspect Chrome
+        run: command -v google-chrome || command -v google-chrome-stable || command -v chromium
+      - name: Audit mobile and desktop production pages
+        run: |
+          mkdir -p test-results
+          ./node_modules/.bin/lighthouse https://criai.xrmovi.com.br/leadlovers.html --quiet --output=json --output-path=test-results/lighthouse-mobile.json --only-categories=performance,accessibility,best-practices,seo --chrome-flags="--headless --no-sandbox --disable-gpu"
+          ./node_modules/.bin/lighthouse https://criai.xrmovi.com.br/leadlovers.html --quiet --preset=desktop --output=json --output-path=test-results/lighthouse-desktop.json --only-categories=performance,accessibility,best-practices,seo --chrome-flags="--headless --no-sandbox --disable-gpu"
+          node tests/lighthouse_summary.mjs test-results/lighthouse-mobile.json test-results/lighthouse-desktop.json
+      - name: Save evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: criai-lighthouse
+          path: test-results/
+          if-no-files-found: ignore
