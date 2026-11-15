@@ -92,6 +92,7 @@ test('reader queries ONLY criai_private and does not synthesize commissions',asy
    ]};
    if(sql.includes('criai_private.traffic_daily')&&sql.includes('GROUP BY'))return {rows:[{channel:'Organic Search',sessions:'9',affiliate_clicks:'1'}]};
    if(sql.includes('criai_private.traffic_daily'))return {rows:[{records:1,active_users:'7',sessions:'9',page_views:'13',affiliate_clicks:'1'}]};
+   if(sql.includes('criai_private.affiliate_cta_daily'))return {rows:[{product_code:'42903',cta_placement:'hero',clicks:'1'}]};
    if(sql.includes('criai_private.ads_daily'))return {rows:[{records:1,spend_brl:'10.50',ad_clicks:'2'}]};
    if(sql.includes('criai_private.commissions'))return {rows:[{records:1,confirmed:'3.00',paid:null}]};
    throw new Error('Unexpected table');
@@ -102,6 +103,7 @@ test('reader queries ONLY criai_private and does not synthesize commissions',asy
  assert.equal(o.sources.ga4.active_users,null); // distinct users are not additive across page/day/channel
  assert.equal(o.sources.ga4.channels[0].channel,'Organic Search');
  assert.equal(o.sources.ga4.channels[0].sessions,null);
+ assert.deepEqual(o.sources.ga4.cta_placements,[{product_code:'42903',placement:'hero',affiliate_clicks:1}]);
  assert.equal(o.sources.google_ads.spend_brl,10.5);
  assert.equal(o.sources.hotmart.confirmed_commissions_brl,3);
  assert.equal(o.sources.hotmart.paid_commissions_brl,null);
@@ -111,9 +113,11 @@ test('reader queries ONLY criai_private and does not synthesize commissions',asy
 test('connected without source rows remains unknown null, not zero',async()=>{
  const r=await createOverviewReader({pgPool:{query:async sql=>sql.includes('sync_status')?
  {rows:[{source:'ga4',state:'connected',last_success_at:'2026-11-15'}]}:
+ sql.includes('affiliate_cta_daily') ? {rows:[]} :
  {rows:[{records:0,active_users:null,sessions:null,page_views:null,affiliate_clicks:null}]}},
  getToday:()=> '2026-11-15'})(7);
  assert.equal(r.sources.ga4.sessions,null);
+ assert.equal(r.sources.ga4.cta_placements,null);
 });
 test('adapter requires trusted client and rejects fake project domain',()=>{
  assert.throws(()=>makeSupabaseDependencies({authClient:{},pgPool:{},projectUrl:'https://wrong.example'}),TypeError);
