@@ -65,3 +65,16 @@ Antes de ativar anúncios pagos, conferir os requisitos de conteúdo original do
 - **Painel administrativo ainda não implantado**: aguardando backend isolado e autenticação segura; não usar GitHub Pages para dados privados.
 - Não houve anúncio pago, venda, pagamento nem alteração no XRMOVI.
 - [Prompt completo para Etapa 7](prompts/etapa7.md).
+
+## Etapa 7 — verificação de produção e preparação de integrações (15/11/2026)
+
+- Lighthouse da oferta Leadlovers realizado no GitHub Actions: **mobile 88/96/100/100** e **desktop 100/96/100/100** (performance/acessibilidade/boas práticas/SEO). [Execução com relatórios brutos](https://github.com/rhianmello/criai/actions/runs/43751040687). Métricas de laboratório, não tráfego real.
+- GA4 CRIAÍ **não conectado**. Não reutilizar propriedade do XRMOVI (ID 562156312).
+- Hotlink redireciona, mas titularidade não confirmada por cópia direta da Hotmart e não houve transação.
+- **Admin privado não implantado:** esquema preliminar em [PR de rascunho #1](https://github.com/rhianmello/criai/pull/1), sem projeto separado, login, MFA ou dados.
+- Regras para futura campanha somente documentadas: [docs/ads-etapa7.md](docs/ads-etapa7.md). Nenhuma campanha criada, nem negativas aplicadas em conta Google Ads.
+- [Relatório e pendências da Etapa 7](docs/etapa7-auditoria.md).
+- [Instruções GA4 exclusivo](docs/ga4-etapa7.md).
+- [Prompt da Etapa 8](prompts/etapa8.md).
+
+**Gate comercial permanece pendente** até verificar Hotlink e conta, GA4 exclusivo, identificação e contato reais, links exigidos pelo produtor e emissão de NFS-e/relatórios.
