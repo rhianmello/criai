@@ -5,3 +5,5 @@
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.btn{transition:none}}
 
 a:focus-visible,button:focus-visible{outline:3px solid #2563eb;outline-offset:3px}
+
+.calculator-form{display:grid;gap:9px;align-items:start}.calculator-form h3{margin:0 0 8px;font-size:20px}.calculator-form label{font-size:13px;font-weight:750;color:#283a56;margin-top:10px}.calculator-form input,.calculator-form select{width:100%;min-height:44px;padding:10px 13px;color:#182442;background:#fff;border:1px solid #b6c6d9;border-radius:10px;font:inherit;font-size:15px}.calculator-form input:focus-visible,.calculator-form select:focus-visible{outline:3px solid #2563eb;outline-offset:2px}.calculator-form output{display:block;border-radius:13px;background:#edf6f3;color:#075c46;padding:16px;margin-top:14px;font-size:18px;font-weight:800}.calculator-form .calculator-note{font-size:12px;color:#596780;margin:3px 0 0}
