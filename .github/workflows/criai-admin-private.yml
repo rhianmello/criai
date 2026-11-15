@@ -1,0 +1,20 @@
+name: CRIAI Etapa 10 private admin tests
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "admin-private/**"
+      - ".github/workflows/criai-admin-private.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  unit:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: Validate CRIAI-only private backend access and metrics
+        run: node --test admin-private/tests/*.test.mjs
