@@ -125,6 +125,16 @@ with sync_playwright() as p:
         test("Preferences reopen",page.locator("#privacyConsent.show").count()==1)
         page.locator('[data-consent="analytics"]').click()
         test("GA4 loaded after accept",page.locator('script[src*="googletagmanager.com"]').count()==1)
+        # Intercept the Hotmart popup: verify event after consent without real visit/purchase.
+        context.route("**/go.hotmart.com/**",lambda route:route.fulfill(status=200,content_type="text/html",body="<title>QA stub</title>"))
+        with page.expect_popup(timeout=12000) as popped:
+            page.locator('.hero-actions a[data-affiliate="leadlovers"]').first.click()
+        popped.value.close()
+        detail=page.evaluate("""() => (window.dataLayer || [])
+            .filter(args=>args && args[0]==='event' && args[1]==='affiliate_click')
+            .map(args=>args[2])""")
+        test("Consent-only CTA placement event",any(x.get("cta_placement")=="hero" and x.get("product_id")=="hotmart_42903" for x in detail),str(detail))
+
     except Exception as exc:test("Consent simulation",False,repr(exc))
     context.close()
     browser.close()
