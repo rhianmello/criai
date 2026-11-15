@@ -15,7 +15,7 @@ const deps={
     exp:t==='expired'?900:1200,is_anonymous:t==='anonymous',session_id:'10000000-0000-4000-8000-000000000001'
   }},
   fetchCurrentUser:async t=>t==='revoked'?null:{id:t==='outsider'?outsider:owner},
-  isActiveSession:async (sessionId,userId)=>userId===owner && sessionId==='10000000-0000-4000-8000-000000000001',
+  isActiveSession:async (sessionId,userId)=>sessionId==='10000000-0000-4000-8000-000000000001',
   isApprovedOwner:async id=>id===owner
 };
 const auth=(token,overrides={})=>authorizeAdmin(token?'Bearer '+token:null,{...deps,...overrides});
