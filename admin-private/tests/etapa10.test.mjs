@@ -94,6 +94,7 @@ test('reader queries ONLY criai_private and does not synthesize commissions',asy
  }};
  const o=await createOverviewReader({pgPool,getToday:()=> '2026-11-15'})(28);
  assert.equal(o.sources.ga4.sessions,9);
+ assert.equal(o.sources.ga4.active_users,null); // distinct users are not additive across page/day/channel
  assert.equal(o.sources.ga4.channels[0].channel,'Organic Search');
  assert.equal(o.sources.google_ads.spend_brl,10.5);
  assert.equal(o.sources.hotmart.confirmed_commissions_brl,3);
