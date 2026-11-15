@@ -125,6 +125,27 @@ with sync_playwright() as p:
         except Exception as exc:test(f"Direct CTA navigation {route}",False,repr(exc))
     context.close()
 
+    # Live CRIAÍ measurement configuration, with analytics requests blocked in QA:
+    # confirms production contains expected public ID but cannot prove DebugView delivery.
+    context=browser.new_context(viewport={"width":390,"height":844},locale="pt-BR")
+    context.route("**/www.googletagmanager.com/**",lambda route:route.abort())
+    context.route("**/www.google-analytics.com/**",lambda route:route.abort())
+    page=context.new_page()
+    try:
+        page.goto(BASE+"/",wait_until="domcontentloaded",timeout=35000)
+        actual_id=page.evaluate("window.CRIAI_CONFIG && window.CRIAI_CONFIG.ga4MeasurementId")
+        test("CRIAI live GA4 ID",actual_id=="G-RG57Q34VB0",str(actual_id))
+        test("Real GA4 not loaded before consent",page.locator('script[src*="googletagmanager.com"]').count()==0)
+        page.locator('[data-consent="analytics"]').click()
+        live_tag=page.locator('script[src*="googletagmanager.com/gtag/js?id=G-RG57Q34VB0"]')
+        test("Real GA4 script requested only after accept",live_tag.count()==1)
+        configs=page.evaluate("""() => (window.dataLayer||[])
+            .filter(args=>args && args[0]==='config').map(args=>({id:args[1],opts:args[2]}))""")
+        test("Real GA4 ID and cookie isolation",any(x.get("id")=="G-RG57Q34VB0" and
+             x.get("opts",{}).get("cookie_domain")=="none" for x in configs),str(configs))
+    except Exception as exc:test("CRIAI GA4 live config",False,repr(exc))
+    context.close()
+
     # Test consent with a fictitious GA4 ID intercepted only in this test browser.
     # Abort analytics network: no production GA4 data is ever sent.
     context=browser.new_context(viewport={"width":390,"height":844},locale="pt-BR")
