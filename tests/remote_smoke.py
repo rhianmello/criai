@@ -61,6 +61,19 @@ with sync_playwright() as p:
                     test(f"Direct Hotlink buttons {width} {route}",links.count()>=4 and all(links.nth(i).get_attribute("href")==HOTLINK and "sponsored" in (links.nth(i).get_attribute("rel") or "") for i in range(links.count())))
                     hero=page.locator('.hero-actions a[data-affiliate="leadlovers"]')
                     test(f"Above-fold CTA {width} {route}",hero.count()==1 and hero.first.is_visible())
+                    final_cta=page.locator('.conversion-actions a[data-affiliate="leadlovers"]')
+                    state_cta=final_cta.evaluate("""el => {
+                        const s = getComputedStyle(el),r=el.getBoundingClientRect();
+                        const p = getComputedStyle(el.parentElement);
+                        return {width:r.width,height:r.height,display:s.display,visibility:s.visibility,
+                          opacity:s.opacity,color:s.color,background:s.backgroundColor,parentDisplay:p.display}
+                    }""") if final_cta.count()==1 else {}
+                    print("FINAL CTA INSPECTION",width,route,state_cta,flush=True)
+                    test(f"Final CTA visible {width} {route}",
+                         final_cta.count()==1 and final_cta.is_visible() and
+                         state_cta.get("width",0)>=140 and state_cta.get("height",0)>=35,
+                         str(state_cta))
+
                     mobile_bar=page.locator(".mobile-offer-bar")
                     test(f"Responsive CTA bar {width} {route}",mobile_bar.is_visible()==(width<=750))
                 if route=="/leadlovers.html":
