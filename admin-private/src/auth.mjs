@@ -13,13 +13,14 @@ export async function authorizeAdmin(header, {
   if (typeof header !== 'string') deny(401, 'MISSING_BEARER_TOKEN');
   const m = /^Bearer ([A-Za-z0-9_.-]+)$/.exec(header);
   if (!m || m[1].length > 8192) deny(401, 'INVALID_BEARER_TOKEN');
+  if (typeof expectedIssuer !== 'string' || !/^https:\/\/[a-z0-9-]+\.supabase\.co\/auth\/v1$/.test(expectedIssuer)) deny(503, 'ISSUER_NOT_CONFIGURED');
   let verified;
   try { verified = await verifyToken(m[1]); }
   catch (_) { deny(401, 'TOKEN_VERIFICATION_FAILED'); }
   if (!verified || verified.verified !== true || !verified.claims) deny(401, 'UNVERIFIED_TOKEN');
   const claims = verified.claims;
   if (!claims.sub || !claims.session_id || typeof claims.exp !== 'number' || claims.exp <= nowSeconds()) deny(401, 'EXPIRED_OR_INVALID_TOKEN');
-  if (expectedIssuer && claims.iss !== expectedIssuer) deny(401, 'WRONG_ISSUER');
+  if (claims.iss !== expectedIssuer) deny(401, 'WRONG_ISSUER');
   if (claims.aud !== expectedAudience) deny(401, 'WRONG_AUDIENCE');
   if (claims.is_anonymous === true) deny(403, 'ANONYMOUS_NOT_ALLOWED');
 
