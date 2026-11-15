@@ -69,15 +69,27 @@
     if (typeof hotlink === 'string' && /^https:\/\/go\.hotmart\.com\/[A-Za-z0-9]+(?:\?.*)?$/.test(hotlink)) {
       link.href = hotlink;
     }
-    link.addEventListener('click', () => track('affiliate_click', {
-      product_id: 'hotmart_42903',
-      product_name: 'leadlovers',
-      destination: 'hotmart_hotlink',
-      outbound: true,
-      transport_type: 'beacon'
-    }));
+    link.addEventListener('click', () => {
+      // Placement explains WHICH CTA was used. No client ID is transmitted by us.
+      const placement = link.closest('.mobile-offer-bar') ? 'mobile_sticky'
+        : link.closest('.hero-actions') ? 'hero'
+        : link.closest('.offer-cta-group') ? 'offer_card'
+        : link.closest('.nav-actions') ? 'header'
+        : link.closest('.video-cta') ? 'video_section'
+        : link.closest('.conversion-actions') ? 'final_cta'
+        : link.closest('.aside-card') ? 'review_sidebar'
+        : 'content';
+      track('affiliate_click', {
+        product_id: 'hotmart_42903',
+        product_name: 'leadlovers',
+        cta_placement: placement,
+        destination: 'hotmart_hotlink',
+        outbound: true,
+        transport_type: 'beacon'
+      });
+    });
   });
-  document.querySelectorAll('a[href="leadlovers.html"]').forEach(link => {
+  document.querySelectorAll('a[href^="leadlovers.html"]').forEach(link => {
     link.addEventListener('click', () => track('select_content', {
       content_type: 'product_review', item_id: 'hotmart_42903'
     }));
