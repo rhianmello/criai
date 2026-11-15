@@ -1,64 +1,57 @@
 # CRIAÍ — curadoria independente de ferramentas digitais
 
-Site estático com conteúdo editorial sobre ferramentas de automação, inteligência artificial e negócios digitais. Primeira indicação: **Leadlovers**, divulgada como parceria comercial. O projeto é **independente** do XRMOVI.
+**Site:** https://criai.xrmovi.com.br/  
+**Repositório:** `rhianmello/criai` (branch `main`)  
+**Hospedagem:** GitHub Pages, `CNAME` para `criai.xrmovi.com.br`  
+**Escopo:** separado do XRMOVI; nenhum arquivo ou campanha XRMOVI modificado.
 
-## Estado verificado em 15/11/2026 — Etapa 3
+O CRIAÍ publica análises e exemplos práticos sobre soluções digitais, com identificação de links comerciais. O checkout e o suporte dos produtos são responsabilidades dos fornecedores.
 
-- Repositório público criado pelo proprietário: **[rhianmello/criai](https://github.com/rhianmello/criai)**, branch `main`.
-- `index.html`, `leadlovers.html`, `sobre.html`, `privacidade.html`, `robots.txt`, `sitemap.xml` e `.nojekyll` presentes.
-- **Recuperados no GitHub:** `assets/style.css`, `assets/app.js`, `assets/config.js`, `assets/favicon.svg`.
-- Testes locais em Chromium (1440, 768, 390 e 320 px): sem erros de JavaScript e sem overflow horizontal; menu mobile funcional; apresentação dos Hotlinks configurada; consentimento GA4 testado com identificador *fictício* injetado apenas no teste.
-- **A ativação do GitHub Pages e o acesso externo não estão confirmados.** É necessário conferir em `Settings → Pages`. Nenhuma configuração DNS foi alterada.
-- **GA4 desativado**: `ga4MeasurementId` ainda vazio, sem rastreamento real de visitas ou cliques.
-- **Sem Google Ads ativo** e sem validação de compra ou comissão real.
+## Etapas concluídas
 
-## Estrutura
+- Páginas `index.html`, `leadlovers.html`, `sobre.html`, `privacidade.html`.
+- Identidade clean white e layout responsivo em `assets/style.css`.
+- `assets/app.js`: menu mobile, botões de afiliado e eventos opcionais de GA4 com consentimento.
+- `assets/config.js`: Hotlink e campo de configuração `ga4MeasurementId` (ainda **vazio**).
+- `robots.txt`, `sitemap.xml`, `canonical` e metadados revisados para `criai.xrmovi.com.br`.
+- `.github/workflows/criai-audit.yml` e `tests/site_check.py`: CI de links locais, arquivos, domínios e sintaxe JavaScript.
+- Configuração do domínio e Enforce HTTPS exibidos como válidos nas capturas do proprietário; publicação automática confirmada por GitHub Actions para revisões anteriores.
 
-- `index.html`: apresentação e critérios de escolha;
-- `leadlovers.html`: guia independente da Leadlovers com botões para Hotmart;
-- `sobre.html`, `privacidade.html`: transparência editorial e privacidade;
-- `assets/style.css`: estilo clean white e responsividade;
-- `assets/app.js`: menu mobile, Hotlink, consentimento e evento `affiliate_click`;
-- `assets/config.js`: Hotlink, campo do GA4 e domínio planejado.
+## Primeira indicação
 
-## Hotlink da Leadlovers
+**Leadlovers** (Hotmart ID 42903), afiliação confirmada em captura do painel.
 
-Produto Hotmart **42903**. Na versão atual, consta em `assets/config.js` e nos botões `leadlovers.html`:
+Hotlink presente em `leadlovers.html` e `assets/config.js`:
 
 `https://go.hotmart.com/O108508884T`
 
-**Ainda depende de confirmação por texto:** o link foi transcrito de uma captura de tela. O proprietário deverá clicar em **Copiar link** na Hotmart e comparar a URL original, caractere por caractere, antes de divulgar. A navegação de destino e a atribuição de comissões não foram homologadas.
+**Pendente**: o link foi transcrito de uma captura. O proprietário precisa copiar da Hotmart, confirmar caracteres e testar o redirecionamento real sem compra. Eventos `affiliate_click` medem apenas cliques, **não** vendas/comissões.
 
-## Como colocar no ar (ação do proprietário no GitHub)
+## Analytics
 
-1. No repositório, acesse **Settings → Pages**.
-2. Em **Build and deployment**, defina **Deploy from a branch**; branch **main**, pasta **/(root)**; clique **Save**.
-3. Quando o GitHub apresentar **Visit site**, confirme a prévia: `https://rhianmello.github.io/criai/`.
-4. Teste os arquivos, links, celular e HTTPS no endereço público.
-5. **Depois da prévia estar correta**, em **Settings → Pages → Custom domain** insira `criar.xrmovi.com.br`.
-6. No provedor DNS responsável por `xrmovi.com.br`, crie **somente** o registro `CNAME` do host `criar`, com valor `rhianmello.github.io`; não altere o domínio raiz ou os registros do XRMOVI.
-7. Confirme o DNS e ative **Enforce HTTPS** quando o certificado estiver disponível. O GitHub normalmente registra o domínio customizado também no arquivo `CNAME`.
+O GA4 só será carregado se houver um Measurement ID válido (formato `G-...`) **e** consentimento para estatísticas. Atualmente o campo `ga4MeasurementId` está vazio, sem coleta analítica. A interface oferece opção de aceitação/recusa e revisão de preferências. Não foram criadas propriedades GA4, credenciais ou métricas fictícias.
 
-Referência: https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site
+## Política e anúncios
 
-## Pendências antes de Google Ads
+Antes de ativar anúncios pagos, conferir os requisitos de conteúdo original do Google Ads e a política da Leadlovers. A Leadlovers não permite campanhas com URL final de Hotlink ou de seus próprios domínios, exige negativas para marcas reservadas e obrigações mensais de NFS-e e relatórios (inclusive para afiliados pessoa física).
 
-- Confirmar Hotlink por cópia direta da Hotmart e checar o destino em navegação real.
-- Confirmar GitHub Pages, DNS, domínio personalizado, HTTPS e arquivos servidos em produção.
-- Revisar páginas legais: informar responsável e canal de contato verificável, sem criar dados fictícios.
-- Corrigir/verificar os links oficiais de marcas do grupo Leadlovers no rodapé — alguns apontam para páginas gerais, não para o serviço indicado.
-- Resolver emissão de NFS-e e relatórios mensais exigidos pela Leadlovers, também para pessoa física.
-- Usar **conteúdo próprio** no CRIAÍ como URL final do Google Ads; a política da Leadlovers **proíbe direcionar anúncios ao Hotlink** e determina palavras-chave de marca como negativas.
-- Reforçar conteúdo útil e original: o Google Ads reprova páginas que são apenas intermediárias para links externos.
-- Criar uma propriedade GA4, inserir ID real em `assets/config.js` e testar consentimento antes de coletar métricas. O evento `affiliate_click` é **clique**, não venda: conversões reais são comprovadas na Hotmart.
-- Não ativar tráfego pago sem completar verificações de política, transparência, destinação e rastreamento.
+**Não há campanhas, cobranças ou pagamentos criados nesta etapa.**
 
-Fontes:
-- https://www.leadlovers.com/politicas-sobre-parcerias
-- https://leadlovers.com/afiliados
-- https://support.google.com/adspolicy/answer/16427718
-- https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site/managing-a-custom-domain-for-your-github-pages-site
+## Auditoria técnica e próximas tarefas
 
-## Segurança de isolamento
+- [Relatório técnico e pendências da Etapa 5](docs/etapa5-auditoria.md)
+- [Proposta de painel privado, ainda não implementado](docs/painel-gerencial.md)
+- [Checklist de Google Ads sem ativação](docs/google-ads-preflight.md)
+- [Prompt de continuidade da Etapa 6](prompts/etapa6.md)
 
-Nenhum arquivo deste site depende do repositório `rhianmello/XRMOVI`, e nenhum arquivo ou configuração do XRMOVI foi alterado nesta etapa.
+### Pendências essenciais
+
+1. Validar a publicação e o HTTPS externamente com acesso real ao domínio.
+2. Confirmar o link Hotmart diretamente do painel e a página final do fornecedor.
+3. Conferir todos os links oficiais exigidos no rodapé, principalmente Pagelovers.
+4. Disponibilizar contato real e revisar obrigações de privacidade e notas fiscais.
+5. Criar GA4 do CRIAÍ, obter identificador, testar eventos com consentimento e validar dados no DebugView.
+6. Preparar painel administrativo privado e separar métricas reais de estimativas.
+7. Somente após esses testes, planejar a ativação de campanhas.
+
+**Importante:** GitHub Pages é site estático público. Nunca gravar chaves, dados pessoais de visitantes, segredos ou dashboard administrativo sensível neste repositório.
