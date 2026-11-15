@@ -112,6 +112,27 @@
     const firstAction = panel.querySelector('[data-consent]');
     if (firstAction) firstAction.focus();
   }));
+  // Official producer demos: privacy-friendly facade; no YouTube load before click.
+  document.querySelectorAll('button[data-video-id]').forEach(button => {
+    button.addEventListener('click', () => {
+      const id = button.getAttribute('data-video-id') || '';
+      if (!/^[A-Za-z0-9_-]{11}$/.test(id)) return;
+      const frame = document.createElement('iframe');
+      frame.src = 'https://www.youtube-nocookie.com/embed/' + encodeURIComponent(id) + '?autoplay=1&rel=0';
+      frame.title = 'Demonstração da Leadlovers';
+      frame.loading = 'eager';
+      frame.allow = 'accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; web-share';
+      frame.allowFullscreen = true;
+      frame.referrerPolicy = 'strict-origin-when-cross-origin';
+      frame.className = 'demo-iframe';
+      const surface = button.closest('.demo-screen');
+      if (!surface) return;
+      surface.replaceChildren(frame);
+      surface.classList.add('demo-active');
+      track('video_start', { content_type: 'producer_demo', video_id: id, product_id: 'hotmart_42903' });
+    });
+  });
+
   // Independent on-page budgeting tool: no storage, cookies or transmission.
   const costForm = document.getElementById('simuladorCusto');
   if (costForm) {
