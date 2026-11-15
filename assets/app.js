@@ -43,7 +43,12 @@
       analytics_storage: 'granted', ad_storage: 'denied',
       ad_user_data: 'denied', ad_personalization: 'denied'
     });
-    window.gtag('config', rawId, { anonymize_ip: true });
+    // Keep analytics cookies on CRIAÍ host only, not the sibling XRMOVI site.
+    window.gtag('config', rawId, {
+      anonymize_ip: true,
+      cookie_domain: 'none',
+      cookie_prefix: 'criai'
+    });
 
     const tag = document.createElement('script');
     tag.async = true;
@@ -116,7 +121,14 @@
     try { localStorage.setItem(storageKey, consent); } catch (_) {}
     panel.classList.remove('show');
     if (consent === 'analytics') startAnalytics();
-    else if (prior === 'analytics' && analyticsReady) window.location.reload();
+    else if (prior === 'analytics' && analyticsReady) {
+      // Stop future collection immediately and unload the tag by reloading.
+      window.gtag('consent', 'update', {
+        analytics_storage: 'denied', ad_storage: 'denied',
+        ad_user_data: 'denied', ad_personalization: 'denied'
+      });
+      window.location.reload();
+    }
   }));
 
   document.querySelectorAll('[data-open-privacy]').forEach(button => button.addEventListener('click', () => {
