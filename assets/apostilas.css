@@ -52,3 +52,14 @@
 @media(max-width:820px){ .product-grid,.product-offer {grid-template-columns:1fr}.product-mockup{max-width:360px}.product-hero{padding:30px 0 46px}.product-feature-grid{grid-template-columns:1fr 1fr}.product-section{padding:55px 0} }
 @media(max-width:550px){.product-shell{width:min(100% - 28px,1160px)}.product-feature-grid,.product-curriculum{grid-template-columns:1fr}.product-mockup{max-width:310px}.product-hero h1{font-size:2.22rem}.product-offer{padding:24px}.product-sample{padding:21px}.product-cta{width:100%}.product-cta-row{width:100%}.product-section-title{font-size:1.9rem} }
 @media(prefers-reduced-motion:reduce){.product-cta{transition:none}}
+
+
+/* Banner discreto de produto próprio na página inicial */
+.editorial-home-bar{background:#eaf9f3;border-bottom:1px solid #d2e9df;padding:19px 0}
+.editorial-home-inner{display:flex;align-items:center;gap:22px;justify-content:space-between}
+.editorial-home-copy{display:flex;align-items:center;gap:16px}
+.editorial-home-copy strong{display:block;color:#153d3e;font-weight:850;font-size:1.03rem}
+.editorial-home-copy small{display:block;color:#42645f;line-height:1.5;font-size:.84rem;margin-top:4px}
+.editorial-home-book{font-size:2rem;display:flex;align-items:center;justify-content:center;width:58px;height:58px;background:white;border:1px solid #cee5dc;border-radius:14px}
+.editorial-home-link{white-space:nowrap;display:inline-flex;justify-content:center;background:#076e63;padding:12px 19px;color:#fff!important;text-decoration:none;border-radius:11px;font-weight:800}
+@media(max-width:650px){.editorial-home-inner{flex-wrap:wrap}.editorial-home-link{width:100%}.editorial-home-copy{align-items:start}.editorial-home-book{width:48px;height:48px;flex-shrink:0}}
