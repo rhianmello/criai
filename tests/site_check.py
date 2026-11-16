@@ -177,6 +177,86 @@ if "cartões internacionais" not in ebook.lower() or "R$ 49,90" not in ebook:
 if "https://criai.xrmovi.com.br/apostilas.html" not in (ROOT / "sitemap.xml").read_text(encoding="utf8"):
     fail("sitemap: editorial product not indexed")
 
+# Bilingual delivery: English pages must be real documents, not external translations.
+from xml.etree import ElementTree as ET
+english_filenames = [
+    "index.html", "apostilas.html", "leadlovers.html", "sobre.html",
+    "privacidade.html", "automacao-whatsapp-empresas.html",
+    "email-marketing-pequenas-empresas.html"
+]
+for name in english_filenames:
+    pt = ROOT / name
+    en = ROOT / "en" / name
+    if not en.is_file():
+        fail(f"i18n: missing English counterpart for {name}")
+        continue
+    pt_html = pt.read_text(encoding="utf8")
+    en_html = en.read_text(encoding="utf8")
+    pt_url = DOMAIN + ("/" if name == "index.html" else "/" + name)
+    en_url = DOMAIN + ("/en/" if name == "index.html" else "/en/" + name)
+    if '<html lang="en">' not in en_html:
+        fail(f"i18n: English lang tag missing in {name}")
+    if 'hreflang="en" href="' + en_url + '"' not in pt_html:
+        fail(f"i18n: {name} missing English alternate")
+    if 'hreflang="pt-BR" href="' + pt_url + '"' not in en_html:
+        fail(f"i18n: {name} missing Portuguese alternate")
+    if 'rel="canonical" href="' + en_url + '"' not in en_html:
+        fail(f"i18n: English canonical incorrect in {name}")
+    if 'data-criai-language="en"' not in pt_html or 'data-criai-language="pt"' not in en_html:
+        fail(f"i18n: language selector missing for {name}")
+    if 'assets/i18n.js' not in pt_html or '../assets/i18n.js' not in en_html:
+        fail(f"i18n: selector script missing in {name}")
+    if '../assets/en.css' not in en_html or '../assets/config.js' not in en_html or '../assets/app.js' not in en_html:
+        fail(f"i18n: English shared styles/scripts missing in {name}")
+    e = AuditParser()
+    e.feed(en_html)
+    for href in e.links:
+        if not href or href.startswith(("http://","https://","mailto:","tel:","javascript:")):
+            continue
+        parsed = urlparse(href)
+        if parsed.scheme or parsed.netloc:
+            continue
+        target = (en.parent / (parsed.path or name)).resolve()
+        if not target.is_file():
+            fail(f"i18n: English {name} broken local link {href}")
+            continue
+        if parsed.fragment and target.suffix == ".html":
+            target_html = target.read_text(encoding="utf8")
+            target_parser = AuditParser()
+            target_parser.feed(target_html)
+            if parsed.fragment not in target_parser.ids:
+                fail(f"i18n: English {name} missing anchor {href}")
+    for affiliate in e.affiliate_links:
+        if not re.fullmatch(r"https://go\\.hotmart\\.com/[A-Za-z0-9]+(?:\\?.*)?", affiliate.get("href","")):
+            fail(f"i18n: English {name} invalid Hotmart affiliate link")
+
+english_product = (ROOT / "en" / "apostilas.html").read_text(encoding="utf8")
+if "Portuguese only" not in english_product and "Portuguese-language" not in english_product:
+    fail("i18n: English product page must disclose that the paid PDF is in Portuguese")
+if "R$ 49.90" not in english_product or "automatic checkout is not live" not in english_product:
+    fail("i18n: English product page price or checkout disclaimer missing")
+for file in ("assets/i18n.js", "assets/i18n.css", "assets/en.css"):
+    if not (ROOT / file).is_file():
+        fail(f"i18n: missing asset {file}")
+locale_script = (ROOT / "assets/i18n.js").read_text(encoding="utf8")
+if "navigator.languages" not in locale_script or "localStorage.setItem" not in locale_script:
+    fail("i18n: language detection or stored choice missing")
+if "location.search + location.hash" not in locale_script:
+    fail("i18n: UTM query/hash must survive locale redirect")
+
+try:
+    tree = ET.parse(ROOT / "sitemap.xml")
+    urls = tree.findall("{http://www.sitemaps.org/schemas/sitemap/0.9}url")
+    actual = {el.findtext("{http://www.sitemaps.org/schemas/sitemap/0.9}loc") for el in urls}
+    for name in english_filenames:
+        en_url = DOMAIN + ("/en/" if name == "index.html" else "/en/" + name)
+        if en_url not in actual:
+            fail(f"i18n: English URL not in sitemap: {name}")
+    if len(urls) < 14:
+        fail("i18n: sitemap should contain 14 bilingual entries")
+except (ET.ParseError, OSError) as exc:
+    fail(f"i18n: sitemap invalid XML: {exc}")
+
 if errors:
     print("CRIAÍ site checks FAILED:")
     for e in errors: print(" -", e)
