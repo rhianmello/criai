@@ -80,6 +80,10 @@ for name, p in pages.items():
         if parsed.scheme or parsed.netloc:
             continue
         target_name = parsed.path or name
+        if target_name.startswith("/"):
+            target_name = target_name.lstrip("/") or "index.html"
+        if target_name.endswith("/"):
+            target_name += "index.html"
         target_path = ROOT / target_name
         if not target_path.is_file():
             fail(f"{name}: broken local link {href}")
@@ -216,7 +220,16 @@ for name in english_filenames:
         parsed = urlparse(href)
         if parsed.scheme or parsed.netloc:
             continue
-        target = (en.parent / (parsed.path or name)).resolve()
+        if parsed.path.startswith("/"):
+            relative = parsed.path.lstrip("/") or "index.html"
+            if relative.endswith("/"):
+                relative += "index.html"
+            target = (ROOT / relative).resolve()
+        else:
+            relative = parsed.path or name
+            if relative.endswith("/"):
+                relative += "index.html"
+            target = (en.parent / relative).resolve()
         if not target.is_file():
             fail(f"i18n: English {name} broken local link {href}")
             continue
@@ -227,7 +240,7 @@ for name in english_filenames:
             if parsed.fragment not in target_parser.ids:
                 fail(f"i18n: English {name} missing anchor {href}")
     for affiliate in e.affiliate_links:
-        if not re.fullmatch(r"https://go\\.hotmart\\.com/[A-Za-z0-9]+(?:\\?.*)?", affiliate.get("href","")):
+        if not re.fullmatch(r"https://go\.hotmart\.com/[A-Za-z0-9]+(?:\?.*)?", affiliate.get("href","")):
             fail(f"i18n: English {name} invalid Hotmart affiliate link")
 
 english_product = (ROOT / "en" / "apostilas.html").read_text(encoding="utf8")
