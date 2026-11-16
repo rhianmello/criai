@@ -126,11 +126,16 @@ if 'plano anual' not in home_html or 'indicação remunerada' not in home_html.l
     fail("home: missing price and affiliate transparency")
 if home_html.count('class="plan-offer-link"') != 3:
     fail("home: missing separate external purchase links")
-for amount in ("R$ 149", "R$ 222"):
+# Valores oficiais divulgados por faixa de contatos e modalidade de cobrança.
+for amount in ("R$ 65", "R$ 87", "R$ 149", "R$ 197", "R$ 222", "R$ 297", "R$ 780", "R$ 1.788", "R$ 2.664"):
     if amount not in home_html or amount not in review_html:
-        fail(f"pricing: missing verified amount {amount}")
-if "R$ 65" in home_html or "R$ 65" in review_html:
-    fail("pricing: old starter teaser price still visible")
+        fail(f"pricing: missing disclosed verified amount {amount}")
+if "2.000 contatos" not in home_html or "5.000 contatos" not in home_html:
+    fail("pricing: missing starter contact tiers")
+if "equivalente no anual" not in home_html or "equivalente no anual" not in review_html:
+    fail("pricing: annual equivalent is not clearly disclosed")
+if "_3Pm1WGiCXw" not in review_html:
+    fail("videos: supplied video reference missing")
 if "plan-price-note" in review_html or "*Valores de referência" in home_html:
     fail("pricing: lengthy price disclaimer still visible")
 privacy_html = (ROOT / "privacidade.html").read_text(encoding="utf8")
