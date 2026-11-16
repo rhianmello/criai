@@ -25,18 +25,18 @@ Sem precisar manter a aba de compra aberta, ele informa o e-mail registrado no p
 
 ## ATIVAÇÃO DO REMETENTE — NÃO CONFUNDIR CÓDIGO PUBLICADO COM ENVIO REAL
 
-O envio transacional é feito pelo Resend, **somente com uma API key específica do CRIAÍ**; não reutilizar chaves do XRMOVI.
+O envio transacional é feito pelo Resend. A função **prioriza uma chave específica do CRIAÍ** quando estiver configurada e, caso contrário, utiliza temporariamente a infraestrutura Resend já existente no mesmo projeto Supabase, com nome do remetente CRIAÍ e o endereço verificado do domínio. As credenciais permanecem somente em variáveis de ambiente no servidor.
 
-1. Verificar, no painel do provedor de e-mail, que o domínio de envio está validado (SPF/DKIM) e que a conta pode enviar do endereço escolhido.
-2. Criar chave de API de envio dedicada ao CRIAÍ no Resend.
-3. Abrir o projeto Supabase ztqtcbzjesrkuaijmylm > Edge Functions > Secrets.
+1. Confirmar, no painel do Resend, que o domínio de envio do XRMOVI continua validado (SPF/DKIM) e que os e-mails transacionais chegam normalmente.
+2. Não é necessário criar nova conta nem chave de imediato se `XRMOVI_RESEND_API_KEY` e `XRMOVI_SUPPORT_MAIL_FROM` estiverem operacionais no Supabase. Uma chave dedicada ao CRIAÍ continua recomendada para isolar quotas e revogação.
+3. Se optar por configurar credenciais separadas, abra o projeto Supabase ztqtcbzjesrkuaijmylm > Edge Functions > Secrets.
 4. Cadastrar:
    - CRIAI_RESEND_API_KEY = chave secreta da integração CRIAÍ no Resend.
    - CRIAI_RECOVERY_FROM = endereço/remetente verificado, por exemplo: CRIAÍ <suporte@xrmovi.com.br>.
 5. Nunca colar essas chaves no GitHub, frontend ou mensagens de chat.
 6. Confirmar GET /health com recovery_ready=true, e somente depois fazer a homologação de envio.
 
-Sem os dois segredos e o remetente autorizado, a UI informa que o envio está indisponível; nenhum código falso é gerado para o cliente.
+Sem o provedor habilitado (seja por chave dedicada ou pelo serviço compartilhado), a UI informa que o envio está indisponível; nenhum código falso é gerado para o cliente. O campo `recovery_ready` no endpoint /health indica a disponibilidade das credenciais, mas o envio real ainda exige teste com uma compra aprovada.
 
 ## Homologação antes de publicar anúncios
 
