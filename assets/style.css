@@ -150,3 +150,82 @@ a:focus-visible,button:focus-visible{outline:3px solid #2563eb;outline-offset:3p
   .mobile-offer-bar .btn-plan-mobile:hover{background:#0e294d}
   .mobile-offer-bar span{display:none}
 }
+
+
+/* CRIAÍ — escolha de planos já na primeira tela, sem depender de botões externos. */
+.plans-first-screen{padding:38px 0 35px;background:radial-gradient(circle at 12% 5%,rgba(28,173,144,.08),transparent 30%),radial-gradient(circle at 91% 35%,rgba(54,116,201,.08),transparent 35%),#fbfcff}
+.plans-first-intro{text-align:center;max-width:820px;margin:0 auto 26px}
+.plans-eyebrow{display:inline-block;font-size:11px;letter-spacing:.15em;font-weight:850;color:#14745b}
+.plans-first-intro h1{font-size:clamp(34px,4.2vw,52px);letter-spacing:-.05em;line-height:1.08;margin:9px 0 11px}
+.plans-first-intro p{font-size:15px;line-height:1.5;color:#58667e;margin:0}
+.plans-choice-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;align-items:stretch}
+.plans-choice-card{position:relative;display:flex;flex-direction:column;min-width:0;min-height:356px;background:#fff;border:1px solid #dbe5ee;border-radius:19px;padding:22px 22px 20px;box-shadow:0 8px 26px rgba(31,52,78,.065)}
+.plans-choice-card.essential{border:2px solid #119572;padding:21px 21px 19px;box-shadow:0 15px 32px rgba(21,127,101,.09)}
+.plans-card-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px}
+.plans-card-kicker{font-size:10px;color:#63718b;letter-spacing:.11em;font-weight:850}
+.plans-tag{padding:3px 9px;border-radius:99px;background:#eef4ff;color:#325788;font-size:10px;font-weight:800}
+.plans-choice-card.essential .plans-tag{background:#e2f8ec;color:#166b49}
+.plans-choice-card h2{font-size:24px;line-height:1.15;margin:12px 0 9px;letter-spacing:-.035em}
+.plans-price{display:flex;align-items:baseline;gap:5px;min-height:43px;white-space:normal}
+.plans-price strong{font-size:33px;line-height:1.16;letter-spacing:-.05em;color:#152544}
+.plans-choice-card.plus .plans-price strong{font-size:26px;letter-spacing:-.025em}
+.plans-price span{font-size:12px;color:#64718a}
+.plans-price-context{font-size:11px;color:#607085;min-height:18px;line-height:1.4;margin:2px 0 14px}
+.plans-choice-card ul{list-style:none;margin:0 0 18px;padding:0;display:grid;gap:7px}
+.plans-choice-card li{position:relative;padding-left:20px;color:#334863;font-size:12.5px;line-height:1.4}
+.plans-choice-card li::before{content:"✓";position:absolute;left:0;color:#07865f;font-weight:900}
+.plan-select-button{margin-top:auto;display:flex;align-items:center;justify-content:center;gap:8px;min-height:47px;border-radius:12px;background:#19365d;color:#fff;font-size:14px;font-weight:850;padding:10px 12px;transition:background .16s,transform .16s}
+.plan-select-button:hover{background:#0e2a4d;transform:translateY(-1px)}
+.plans-choice-card.essential .plan-select-button{background:#08754f}
+.plans-choice-card.essential .plan-select-button:hover{background:#045b3f}
+.plan-offer-link{text-align:center;color:#167456;text-decoration:underline;text-underline-offset:3px;font-size:12px;font-weight:750;padding-top:10px}
+.plans-first-bottom{margin-top:16px;display:grid;gap:10px}
+.plans-first-bottom p{color:#617187;font-size:11px;line-height:1.55;margin:0;text-align:center}
+.plans-first-links{display:flex;justify-content:center;flex-wrap:wrap;gap:8px 20px}
+.plans-first-links a{font-size:12px;font-weight:750;color:#1c5781;text-decoration:underline;text-underline-offset:3px}
+.plans-first-layout .quick-buy-dock{display:none}
+.plans-first-layout #planos{scroll-margin-top:88px}
+.plan-details-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:27px}
+.plan-detail-card{display:flex;flex-direction:column;align-items:stretch;background:white;border:1px solid #dae5ed;border-radius:18px;padding:22px;min-width:0}
+.plan-detail-card[id]{scroll-margin-top:98px}
+.plan-detail-kicker{font-size:10px;letter-spacing:.1em;font-weight:850;color:#18735b}
+.plan-detail-card h3{font-size:24px;letter-spacing:-.03em;margin:8px 0}
+.plan-detail-price{font-size:13px;color:#68768a;line-height:1.3;min-height:45px}
+.plan-detail-price strong{font-size:26px;color:#182442}
+.plan-detail-card p{font-size:13px;line-height:1.6;color:#5b6980;margin:8px 0 14px}
+.plan-detail-card ul{padding-left:18px;color:#334863;font-size:13px;line-height:1.55;margin:0 0 20px}
+.plan-detail-card li{margin-bottom:7px}
+.plan-detail-buy{margin-top:auto;min-height:45px;font-size:13px;padding:11px}
+.plan-detail-official{text-align:center;color:#27567d;font-size:12px;text-decoration:underline;text-underline-offset:3px;font-weight:750;margin-top:12px}
+.choose-section .plan-price-note{margin-top:18px;line-height:1.6}
+@media(max-width:900px){
+ .plans-first-screen{padding:32px 0}
+ .plans-choice-grid{gap:10px}
+ .plans-choice-card{padding:18px;min-height:362px}
+ .plans-choice-card.essential{padding:17px}
+ .plans-price strong{font-size:29px}
+ .plans-choice-card.plus .plans-price strong{font-size:22px}
+ .plans-choice-card li{font-size:12px}
+}
+@media(max-width:730px){
+ .plans-choice-grid,.plan-details-grid{grid-template-columns:1fr;gap:12px}
+ .plans-first-screen{padding:24px 0 28px}
+ .plans-first-intro{text-align:left;margin-bottom:18px}
+ .plans-first-intro h1{font-size:clamp(30px,8vw,39px);margin:7px 0 8px}
+ .plans-first-intro p{font-size:14px;line-height:1.5}
+ .plans-choice-card,.plans-choice-card.essential{min-height:0;padding:19px;border-radius:16px}
+ .plans-choice-card h2{font-size:22px;margin:8px 0 6px}
+ .plans-choice-card ul{margin-bottom:14px;gap:5px}
+ .plans-choice-card li{font-size:12px}
+ .plans-price strong{font-size:29px}
+ .plans-price-context{margin-bottom:10px}
+ .plan-select-button{min-height:47px}
+ .plans-first-bottom p{text-align:left}
+ .plans-first-links{justify-content:flex-start}
+ .plan-detail-card{padding:20px}
+}
+@media(max-width:360px){
+ .plans-first-intro h1{font-size:30px}
+ .plans-choice-card,.plans-choice-card.essential{padding:16px}
+ .plans-first-links{gap:8px 13px}
+}
