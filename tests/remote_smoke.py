@@ -32,7 +32,7 @@ try:
     req=Request(EBOOK_API+"/health",headers={"User-Agent":"CRIAI-QA/1.0","Origin":BASE})
     with urlopen(req,timeout=20,context=ssl.create_default_context()) as res:
         h=json.loads(res.read())
-        test("Recovery readiness field exposed",res.status==200 and isinstance(h.get("recovery_ready"),bool))
+        test("Recovery email service configured",res.status==200 and h.get("recovery_ready") is True,str(h.get("recovery_ready")))
         test("Paid PT and EN PDFs present",h.get("portuguese_pdf") is True and h.get("english_pdf") is True)
 except Exception as exc:test("Recovery backend health",False,repr(exc))
 try:
