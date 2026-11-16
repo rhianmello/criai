@@ -36,7 +36,7 @@ async function bodyJson(req: Request) {
 }
 function safeId(s: unknown) { return typeof s === "string" && /^[0-9a-f]{8}-[0-9a-f-]{27,36}$/i.test(s) ? s : null; }
 function safeToken(s: unknown) { return typeof s === "string" && /^[a-zA-Z0-9_-]{40,80}$/.test(s) ? s : null; }
-function validEmail(s: unknown) { return typeof s === "string" && s.length <= 254 && /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(s); }
+function validEmail(s: unknown) { return typeof s === "string" && s.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s); }
 function sellerReady() { return Boolean(envToken() && envWebhookSecret() && sql && storage); }
 async function fileReady(edition: "pt" | "en") {
   if (!sql) return false;
@@ -167,7 +167,7 @@ Deno.serve(async (req: Request) => {
           : "Não foi possível abrir o checkout. Nenhuma cobrança foi feita." }, 503);
       }
       const checkout = new URL(response.init_point);
-      if (!/^https:$/.test(checkout.protocol) || !/(^|\\.)mercadopago\\.com(\\.br)?$/.test(checkout.hostname)) {
+      if (!/^https:$/.test(checkout.protocol) || !/(^|\.)mercadopago\.com(\.br)?$/.test(checkout.hostname)) {
         return json({ error: "Unexpected payment provider response." }, 502);
       }
       await sql!`update criai_private.ebook_orders
@@ -200,7 +200,8 @@ Deno.serve(async (req: Request) => {
       const dataId = url.searchParams.get("data.id") || "";
       const parts = Object.fromEntries(signature.split(",").map(x => x.trim().split("=")));
       const ts = Number(parts.ts);
-      if (!dataId || !requestId || !Number.isFinite(ts) || Math.abs(Date.now() - ts) > 10 * 60 * 1000)
+      const timestampMs = ts < 1e11 ? ts * 1000 : ts;
+      if (!dataId || !requestId || !Number.isFinite(ts) || Math.abs(Date.now() - timestampMs) > 10 * 60 * 1000)
         return json({ error: "Invalid webhook." }, 401);
       const expected = await hmacHex(envWebhookSecret(), `id:${dataId.toLowerCase()};request-id:${requestId};ts:${parts.ts};`);
       if (!fixedTimeHexEqual(expected, parts.v1 || "")) return json({ error: "Invalid webhook signature." }, 401);
