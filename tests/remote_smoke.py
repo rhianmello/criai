@@ -59,8 +59,16 @@ with sync_playwright() as p:
                 if route in ("/", "/leadlovers.html"):
                     links=page.locator('a[data-affiliate="leadlovers"]')
                     test(f"Direct Hotlink buttons {width} {route}",links.count()>=4 and all(links.nth(i).get_attribute("href")==HOTLINK and "sponsored" in (links.nth(i).get_attribute("rel") or "") for i in range(links.count())))
-                    hero=page.locator('.hero-actions a[data-affiliate="leadlovers"]')
-                    test(f"Above-fold CTA {width} {route}",hero.count()==1 and hero.first.is_visible())
+                    # Mobile uses a fixed offer bar; desktop keeps a header CTA.
+                    # The home now starts with plan cards rather than .hero-actions.
+                    top_selector = ('.mobile-offer-bar a[data-affiliate="leadlovers"]'
+                                    if width<=750 else '.nav-actions a[data-affiliate="leadlovers"]')
+                    top_link=page.locator(top_selector)
+                    in_view=top_link.first.evaluate("""el => {
+                        const r=el.getBoundingClientRect();
+                        return r.width>=100 && r.height>=30 && r.bottom>0 && r.top<innerHeight;
+                    }""") if top_link.count()==1 and top_link.first.is_visible() else False
+                    test(f"Above-fold CTA {width} {route}",top_link.count()==1 and in_view)
                     final_cta=page.locator('.conversion-actions a[data-affiliate="leadlovers"]')
                     state_cta=final_cta.evaluate("""el => {
                         const s = getComputedStyle(el),r=el.getBoundingClientRect();
@@ -116,7 +124,11 @@ with sync_playwright() as p:
     for route in ["/","/leadlovers.html"]:
         try:
             page.goto(BASE+route,wait_until="domcontentloaded",timeout=35000)
-            link=page.locator('.hero-actions a[data-affiliate="leadlovers"]')
+            # The fixed mobile CTA is the actual first-screen conversion path.
+            consent_button=page.locator('[data-consent="necessary"]')
+            if consent_button.count() and consent_button.is_visible():
+                consent_button.click()
+            link=page.locator('.mobile-offer-bar a[data-affiliate="leadlovers"]').first
             test(f"Same-tab affiliate CTA {route}",link.get_attribute("target") in (None,"_self"))
             with page.expect_navigation(wait_until="domcontentloaded",timeout=12000):
                 link.click()
@@ -164,13 +176,13 @@ with sync_playwright() as p:
         test("GA4 loaded after accept",page.locator('script[src*="googletagmanager.com"]').count()==1)
         # Keep the link in the page for this check only: verify click event
         # without navigating away or sending data to a real third party.
-        link=page.locator('.hero-actions a[data-affiliate="leadlovers"]').first
+        link=page.locator('.mobile-offer-bar a[data-affiliate="leadlovers"]').first
         link.evaluate("el => el.addEventListener('click', ev => ev.preventDefault(), {capture: true})")
         link.click()
         detail=page.evaluate("""() => (window.dataLayer || [])
             .filter(args=>args && args[0]==='event' && args[1]==='affiliate_click')
             .map(args=>args[2])""")
-        test("Consent-only CTA placement event",any(x.get("cta_placement")=="hero" and x.get("product_id")=="hotmart_42903" for x in detail),str(detail))
+        test("Consent-only CTA placement event",any(x.get("cta_placement")=="mobile_sticky" and x.get("product_id")=="hotmart_42903" for x in detail),str(detail))
         settings=page.evaluate("""() => (window.dataLayer || []).filter(args=>args && args[0]==='config').map(args=>args[2])""")
         test("GA4 cookies restricted to CRIAI",any(x.get('cookie_domain')=='none' and x.get('cookie_prefix')=='criai' for x in settings),str(settings))
         page.locator('[data-open-privacy]').first.click()
