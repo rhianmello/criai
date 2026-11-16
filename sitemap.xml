@@ -1,10 +1,73 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://criai.xrmovi.com.br/</loc></url>
-  <url><loc>https://criai.xrmovi.com.br/apostilas.html</loc></url>
-  <url><loc>https://criai.xrmovi.com.br/leadlovers.html</loc></url>
-  <url><loc>https://criai.xrmovi.com.br/sobre.html</loc></url>
-  <url><loc>https://criai.xrmovi.com.br/privacidade.html</loc></url>
-  <url><loc>https://criai.xrmovi.com.br/automacao-whatsapp-empresas.html</loc></url>
-  <url><loc>https://criai.xrmovi.com.br/email-marketing-pequenas-empresas.html</loc></url>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url><loc>https://criai.xrmovi.com.br/</loc>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://criai.xrmovi.com.br/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://criai.xrmovi.com.br/en/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://criai.xrmovi.com.br/"/>
+  </url>
+  <url><loc>https://criai.xrmovi.com.br/en/</loc>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://criai.xrmovi.com.br/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://criai.xrmovi.com.br/en/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://criai.xrmovi.com.br/"/>
+  </url>
+  <url><loc>https://criai.xrmovi.com.br/apostilas.html</loc>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://criai.xrmovi.com.br/apostilas.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://criai.xrmovi.com.br/en/apostilas.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://criai.xrmovi.com.br/apostilas.html"/>
+  </url>
+  <url><loc>https://criai.xrmovi.com.br/en/apostilas.html</loc>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://criai.xrmovi.com.br/apostilas.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://criai.xrmovi.com.br/en/apostilas.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://criai.xrmovi.com.br/apostilas.html"/>
+  </url>
+  <url><loc>https://criai.xrmovi.com.br/leadlovers.html</loc>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://criai.xrmovi.com.br/leadlovers.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://criai.xrmovi.com.br/en/leadlovers.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://criai.xrmovi.com.br/leadlovers.html"/>
+  </url>
+  <url><loc>https://criai.xrmovi.com.br/en/leadlovers.html</loc>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://criai.xrmovi.com.br/leadlovers.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://criai.xrmovi.com.br/en/leadlovers.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://criai.xrmovi.com.br/leadlovers.html"/>
+  </url>
+  <url><loc>https://criai.xrmovi.com.br/sobre.html</loc>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://criai.xrmovi.com.br/sobre.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://criai.xrmovi.com.br/en/sobre.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://criai.xrmovi.com.br/sobre.html"/>
+  </url>
+  <url><loc>https://criai.xrmovi.com.br/en/sobre.html</loc>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://criai.xrmovi.com.br/sobre.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://criai.xrmovi.com.br/en/sobre.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://criai.xrmovi.com.br/sobre.html"/>
+  </url>
+  <url><loc>https://criai.xrmovi.com.br/privacidade.html</loc>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://criai.xrmovi.com.br/privacidade.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://criai.xrmovi.com.br/en/privacidade.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://criai.xrmovi.com.br/privacidade.html"/>
+  </url>
+  <url><loc>https://criai.xrmovi.com.br/en/privacidade.html</loc>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://criai.xrmovi.com.br/privacidade.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://criai.xrmovi.com.br/en/privacidade.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://criai.xrmovi.com.br/privacidade.html"/>
+  </url>
+  <url><loc>https://criai.xrmovi.com.br/automacao-whatsapp-empresas.html</loc>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://criai.xrmovi.com.br/automacao-whatsapp-empresas.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://criai.xrmovi.com.br/en/automacao-whatsapp-empresas.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://criai.xrmovi.com.br/automacao-whatsapp-empresas.html"/>
+  </url>
+  <url><loc>https://criai.xrmovi.com.br/en/automacao-whatsapp-empresas.html</loc>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://criai.xrmovi.com.br/automacao-whatsapp-empresas.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://criai.xrmovi.com.br/en/automacao-whatsapp-empresas.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://criai.xrmovi.com.br/automacao-whatsapp-empresas.html"/>
+  </url>
+  <url><loc>https://criai.xrmovi.com.br/email-marketing-pequenas-empresas.html</loc>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://criai.xrmovi.com.br/email-marketing-pequenas-empresas.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://criai.xrmovi.com.br/en/email-marketing-pequenas-empresas.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://criai.xrmovi.com.br/email-marketing-pequenas-empresas.html"/>
+  </url>
+  <url><loc>https://criai.xrmovi.com.br/en/email-marketing-pequenas-empresas.html</loc>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://criai.xrmovi.com.br/email-marketing-pequenas-empresas.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://criai.xrmovi.com.br/en/email-marketing-pequenas-empresas.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://criai.xrmovi.com.br/email-marketing-pequenas-empresas.html"/>
+  </url>
 </urlset>
