@@ -107,6 +107,26 @@ if "criai.xrmovi.com.br/sitemap.xml" not in (ROOT / "robots.txt").read_text(enco
 if "<loc>https://criai.xrmovi.com.br/" not in (ROOT / "sitemap.xml").read_text(encoding="utf8"):
     fail("sitemap.xml base wrong")
 
+# A primeira dobra precisa apresentar planos reais, com escolha interna que não dependa
+# da disponibilidade dos links externos de afiliado no navegador.
+home_html = (ROOT / "index.html").read_text(encoding="utf8")
+review_html = (ROOT / "leadlovers.html").read_text(encoding="utf8")
+if 'id="planos"' not in home_html or home_html.find('id="planos"') > home_html.find('id="solucoes"'):
+    fail("home: plans not shown before long-form editorial content")
+if home_html.count('class="plan-select-button"') != 3:
+    fail("home: missing one or more plan-selection controls")
+for slug in ("starter", "essential", "plus"):
+    if f'href="leadlovers.html#plano-{slug}"' not in home_html:
+        fail(f"home: missing plan {slug} link")
+    if f'id="plano-{slug}"' not in review_html:
+        fail(f"review: missing plan {slug} destination")
+    if f'PLANO {slug.upper()}' not in home_html:
+        fail(f"home: missing plan {slug} label")
+if 'Valores de referência' not in home_html or 'indicação remunerada' not in home_html.lower():
+    fail("home: missing price and affiliate transparency")
+if home_html.count('class="plan-offer-link"') != 3:
+    fail("home: missing separate external purchase links")
+
 app = (ROOT / "assets/app.js").read_text(encoding="utf8")
 if "analyticsReady" not in app or "consent !== 'analytics'" not in app or "affiliate_click" not in app:
     fail("app.js: consent-gated analytics tracking missing")
