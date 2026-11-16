@@ -174,7 +174,7 @@ if "checkout automático ainda não está disponível" not in ebook:
     fail("apostilas: manual purchase limitation not disclosed")
 if any(tag in ebook for tag in ('href="downloads/', 'href="ebooks/', 'href="apostila-completa.pdf"')):
     fail("apostilas: paid PDF is exposed by a public link")
-if 'id="internacional"' not in ebook or "Consultar compra no exterior" not in ebook:
+if 'id="internacional"' not in ebook or "Escolher idioma e solicitar compra" not in ebook:
     fail("apostilas: international buyer section missing")
 if "cartões internacionais" not in ebook.lower() or "R$ 49,90" not in ebook:
     fail("apostilas: international card and BRL price disclosures missing")
@@ -244,8 +244,23 @@ for name in english_filenames:
             fail(f"i18n: English {name} invalid Hotmart affiliate link")
 
 english_product = (ROOT / "en" / "apostilas.html").read_text(encoding="utf8")
-if "Portuguese only" not in english_product and "Portuguese-language" not in english_product:
-    fail("i18n: English product page must disclose that the paid PDF is in Portuguese")
+if "Portuguese only" in english_product or "has not been translated" in english_product:
+    fail("i18n: English product page still falsely says no English PDF exists")
+if 'data-ebook-language-picker' not in english_product or 'data-ebook-language-picker' not in ebook:
+    fail("ebook: buyer must be able to select PT/EN edition on both product pages")
+for page_name,body in (("PT",ebook),("EN",english_product)):
+    for needle in ('name="ebook-language"', 'value="pt"', 'value="en"', 'data-ebook-purchase', 'data-selected-ebook-language'):
+        if needle not in body:
+            fail(f"ebook: {page_name} edition selector missing {needle}")
+    if "ebook-language.js" not in body or "ebook-language.css" not in body:
+        fail(f"ebook: {page_name} buyer language assets not included")
+for asset in ("assets/ebook-language.js", "assets/ebook-language.css"):
+    if not (ROOT / asset).is_file():
+        fail(f"ebook: missing {asset}")
+js = (ROOT / "assets/ebook-language.js").read_text(encoding="utf8")
+for rule in ("CRIAI-EBOOK-IA-01-PT", "CRIAI-EBOOK-IA-01-EN", "sessionStorage.setItem", "data-ebook-purchase", "encodeURIComponent"):
+    if rule not in js:
+        fail(f"ebook: language selection must be transmitted with purchase: {rule}")
 if "R$ 49.90" not in english_product or "automatic checkout is not live" not in english_product:
     fail("i18n: English product page price or checkout disclaimer missing")
 for file in ("assets/i18n.js", "assets/i18n.css", "assets/en.css"):
