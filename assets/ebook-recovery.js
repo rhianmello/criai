@@ -66,7 +66,7 @@
   emailInput.placeholder = labels.placeholder;
   let challengeId = "";
   let accessToken = "";
-  let available = false;
+  let requesting = false;
 
   function message(value) { status.textContent = value; }
   function view(which) {
@@ -76,7 +76,7 @@
   }
   async function post(route, payload) {
     const response = await fetch(api + "/" + route, {
-      method: "POST", cache: "no-store",
+      method: "POST", cache: "no-store", signal: AbortSignal.timeout(20000),
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
     });
@@ -93,17 +93,19 @@
     accessToken = "";
     try { sessionStorage.removeItem(sessionKey); } catch (_) {}
     view("email");
-    message(available ? labels.ready : labels.unavailable);
+    message(labels.ready);
     emailInput.focus();
   }
   document.querySelectorAll("[data-back]").forEach(btn => btn.addEventListener("click", reset));
 
   emailForm.addEventListener("submit", async event => {
     event.preventDefault();
-    if (!available || !emailInput.checkValidity()) {
-      if (!emailInput.checkValidity()) emailInput.reportValidity();
+    if (requesting) return;
+    if (!emailInput.checkValidity()) {
+      emailInput.reportValidity();
       return;
     }
+    requesting = true;
     sendButton.disabled = true;
     message(labels.waiting);
     try {
@@ -117,7 +119,8 @@
     } catch (error) {
       message(error.status === 503 ? labels.unavailable : labels.error);
     } finally {
-      sendButton.disabled = !available;
+      requesting = false;
+      sendButton.disabled = false;
     }
   });
   verifyForm.addEventListener("submit", async event => {
@@ -164,21 +167,14 @@
       btn.disabled = false;
     }
   }));
-  (async () => {
-    try {
-      const response = await fetch(api + "/health", { cache: "no-store" });
-      if (!response.ok) throw new Error("not_ready");
-      const data = await response.json();
-      available = data.recovery_ready === true;
-    } catch (_) { available = false; }
-    sendButton.disabled = !available;
-    try { accessToken = sessionStorage.getItem(sessionKey) || ""; } catch (_) {}
-    if (accessToken && /^[a-zA-Z0-9_-]{40,80}$/.test(accessToken)) {
-      view("download");
-      message(labels.authorized);
-    } else {
-      view("email");
-      message(available ? labels.ready : labels.unavailable);
-    }
-  })();
+  // Never block the send button behind a separate health request.
+  // Only recovery/request determines whether sending is available.
+  try { accessToken = sessionStorage.getItem(sessionKey) || ""; } catch (_) {}
+  if (accessToken && /^[a-zA-Z0-9_-]{40,80}$/.test(accessToken)) {
+    view("download");
+    message(labels.authorized);
+  } else {
+    view("email");
+    message(labels.ready);
+  }
 })();
