@@ -201,6 +201,50 @@ with sync_playwright() as p:
 
     except Exception as exc:test("Consent simulation",False,repr(exc))
     context.close()
+    # Language switching and direct English routes: real browser, no geolocation lookup.
+    english_context=browser.new_context(viewport={"width":390,"height":844},locale="en-US")
+    english_page=english_context.new_page()
+    try:
+        english_page.goto(BASE+"/?utm_source=language_qa#solucoes",wait_until="domcontentloaded",timeout=35000)
+        english_page.wait_for_timeout(950)
+        url=english_page.url
+        test("Auto English by browser language",
+             "/en/" in url and "utm_source=language_qa" in url and
+             english_page.locator('html[lang="en"]').count()==1, url)
+        test("English header selector",english_page.locator('a[data-criai-language="en"][aria-current="page"]').count()==1)
+        test("English responsive header 390",english_page.evaluate("document.documentElement.scrollWidth-innerWidth")<=3)
+        english_page.locator('a[data-criai-language="pt"]').click()
+        english_page.wait_for_timeout(500)
+        test("Manual Portuguese choice persists",
+             english_page.url.startswith(BASE+"/?") and
+             english_page.evaluate("localStorage.getItem('criai_language_v1')")=="pt" and
+             english_page.locator('html[lang="pt-BR"]').count()==1,
+             english_page.url)
+        english_page.reload(wait_until="domcontentloaded")
+        english_page.wait_for_timeout(500)
+        test("Portuguese selection prevents repeat redirect",
+             english_page.locator('html[lang="pt-BR"]').count()==1,english_page.url)
+    except Exception as exc:test("English language switch flow",False,repr(exc))
+    english_context.close()
+
+    direct_context=browser.new_context(viewport={"width":390,"height":844},locale="pt-BR")
+    direct_page=direct_context.new_page()
+    try:
+        direct_page.goto(BASE+"/en/apostilas.html",wait_until="domcontentloaded",timeout=35000)
+        direct_page.wait_for_timeout(600)
+        test("Explicit English URL is honored",
+             direct_page.url.startswith(BASE+"/en/apostilas.html") and
+             direct_page.locator('html[lang="en"]').count()==1,direct_page.url)
+        test("English guide language disclosed",
+             "Portuguese only" in direct_page.locator("main").inner_text() and
+             "R$ 49.90" in direct_page.locator("main").inner_text())
+        test("English page does not pretend checkout is live",
+             direct_page.locator('a[href^="mailto:"]').count()>=1 and
+             "automatic checkout is not live" in direct_page.locator("main").inner_text())
+        test("English guide mobile does not overflow",
+             direct_page.evaluate("document.documentElement.scrollWidth-innerWidth")<=3)
+    except Exception as exc:test("English product acceptance",False,repr(exc))
+    direct_context.close()
     browser.close()
 
 (OUT/"remote-report.json").write_text(json.dumps({"timestamp_utc":time.strftime("%Y-%m-%dT%H:%M:%SZ",time.gmtime()),"checks":checks,"hotlink_network_only":affiliate,"errors":errors},ensure_ascii=False,indent=2),encoding="utf8")
