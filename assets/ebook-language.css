@@ -18,3 +18,11 @@
 .en-body .en-cta .ebook-language-help{color:#d6e7ee}
 .en-body .en-cta .ebook-choice-surface{color:#fff}
 @media(max-width:440px){.ebook-language-choices{grid-template-columns:1fr}.ebook-language-choice .ebook-choice-surface{min-height:58px;padding-top:11px;padding-bottom:11px}.ebook-language-choice input{top:14px}}
+
+
+/* Ebook purchase email field and live checkout feedback */
+.ebook-buyer-email-label{display:block;margin:16px 0 7px;font-size:.85rem;font-weight:800}
+.ebook-buyer-email{display:block;width:100%;max-width:440px;padding:12px 14px;color:#142c46;background:#fff;border:1px solid #adc4d7;border-radius:9px;font-size:1rem}
+.ebook-buyer-email:focus-visible{outline:3px solid #63d9bd;outline-offset:2px}
+.ebook-checkout-message{font-size:.83rem;line-height:1.6;padding:10px 0;opacity:.9}
+[data-ebook-purchase][aria-busy="true"]{opacity:.75;pointer-events:none}
