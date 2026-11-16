@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" xml:lang="en" width="800" height="1030" viewBox="0 0 800 1030" role="img" aria-labelledby="title desc">
+<title id="title">CRIAÍ: Build Your Digital Business with AI</title>
+<desc id="desc">English-language book cover in midnight blue, with white and mint typography, practical steps, worksheets and AI prompts.</desc>
+<defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#10233d"/><stop offset="1" stop-color="#0b4262"/></linearGradient></defs>
+<rect width="800" height="1030" rx="18" fill="url(#bg)"/>
+<circle cx="820" cy="235" r="360" fill="#285c75" opacity=".45"/>
+<circle cx="760" cy="160" r="230" fill="#357888" opacity=".45"/>
+<rect x="68" y="68" width="136" height="48" rx="15" fill="#079680"/>
+<text x="89" y="102" font-family="Arial,sans-serif" font-size="29" font-weight="800" fill="#fff">CRIAÍ</text>
+<text x="68" y="227" font-family="Arial,sans-serif" font-size="20" letter-spacing="5" fill="#9febd5" font-weight="700">PRACTICAL GUIDE • 2026</text>
+<text x="65" y="333" font-family="Arial,sans-serif" font-size="77" fill="#fff" font-weight="900">BUILD YOUR</text>
+<text x="65" y="438" font-family="Arial,sans-serif" font-size="100" fill="#fff" font-weight="900">DIGITAL</text>
+<text x="65" y="539" font-family="Arial,sans-serif" font-size="93" fill="#fff" font-weight="900">BUSINESS</text>
+<text x="65" y="645" font-family="Arial,sans-serif" font-size="106" fill="#83ecc9" font-weight="900">WITH AI</text>
+<text x="70" y="722" font-family="Arial,sans-serif" font-size="27" fill="#d8e7f1">From an idea to your first launch.</text>
+<text x="70" y="759" font-family="Arial,sans-serif" font-size="25" fill="#d8e7f1">Practical steps, worksheets and prompts.</text>
+<rect x="65" y="845" width="675" height="99" rx="16" fill="#008f80"/>
+<text x="91" y="889" font-family="Arial,sans-serif" font-size="22" font-weight="750" fill="#fff">36 STEPS • 12 WORKSHEETS • 10 PROMPTS</text>
+<text x="91" y="922" font-family="Arial,sans-serif" font-size="18" fill="#ebfff9">An actionable guide to learn and build.</text>
+</svg>
