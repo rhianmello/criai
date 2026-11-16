@@ -12,8 +12,9 @@
   const retry = document.querySelector("[data-check]");
   const back = document.querySelector("[data-back]");
   const support = document.querySelector("[data-support]");
+  const recovery = document.querySelector("[data-recovery]");
   const l = en ? {
-    title: "Your purchase", missing: "We could not recover your purchase in this browser. Contact support using the email entered at checkout.",
+    title: "Your purchase", missing: "We could not recover your original purchase session. Use the email recovery link below.",
     pending: "Waiting for confirmed payment. If you paid by Pix, approval may take a few moments.",
     approved: "Payment confirmed! Your PDF is ready for a secure download.",
     bad: "The payment has not been approved. Nothing is unlocked.",
@@ -21,7 +22,7 @@
     loading: "Verifying payment with the provider…", downloadPt: "Download in Portuguese", downloadEn: "Download in English", downloading: "Preparing secure link…",
     check: "Check payment again", back: "Return to the guide", help: "Email support"
   } : {
-    title: "Sua compra", missing: "Não foi possível recuperar a compra neste navegador. Contate o suporte pelo e-mail informado no pagamento.",
+    title: "Sua compra", missing: "Não foi possível recuperar a sessão original desta compra. Utilize a recuperação pelo e-mail abaixo.",
     pending: "Aguardando confirmação do pagamento. Em pagamentos por Pix, pode levar alguns instantes.",
     approved: "Pagamento confirmado! Sua apostila já pode ser baixada com segurança.",
     bad: "O pagamento não está aprovado. O arquivo continua protegido.",
@@ -33,6 +34,8 @@
   heading.textContent = l.title; retry.textContent = l.check; back.textContent = l.back;
   back.href = en ? "/en/apostilas.html" : "/apostilas.html";
   support.textContent = l.help;
+  recovery.textContent = en ? "Recover my guide by email" : "Recuperar apostila pelo e-mail";
+  recovery.href = en ? "/recuperar-apostila.html?lang=en" : "/recuperar-apostila.html";
   buttons.forEach(btn => { btn.textContent = btn.dataset.download === "en" ? l.downloadEn : l.downloadPt; });
   let token = "";
   let verified = false;
