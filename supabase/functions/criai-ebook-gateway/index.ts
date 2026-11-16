@@ -309,7 +309,7 @@ Deno.serve(async (req: Request) => {
   try {
     if (route === "health" && req.method === "GET") {
       return json({ configured: sellerReady(), recovery_ready: recoveryReady(), portuguese_pdf: await fileReady("pt"), english_pdf: await fileReady("en"),
-        currencies: { pt: "BRL", en: "USD" } });
+        gateway: "checkout-pro-orders", currencies: { pt: "BRL", en: "USD" } });
     }
     if (route === "recovery/request" && req.method === "POST") return await requestRecovery(req);
     if (route === "recovery/verify" && req.method === "POST") return await verifyRecovery(req);
@@ -328,33 +328,36 @@ Deno.serve(async (req: Request) => {
           (id,access_token_sha256,site_locale,ebook_edition,buyer_email,amount,currency,payment_state)
           values (${id}::uuid,${hash},${locale},${edition},${input.email.trim().toLowerCase()},${price.amount},${price.currency},'created')`;
       const returnUrl = `${SITE}/compra.html?order=${encodeURIComponent(id)}&lang=${locale}`;
-      const preference = {
-        items: [{ id: edition === "en" ? "CRIAI-EBOOK-IA-01-EN" : "CRIAI-EBOOK-IA-01-PT",
-          title: edition === "en" ? "CRIAI - Build Your Digital Business with AI" : "CRIAI - Crie Seu Negocio Digital com IA",
-          quantity: 1, unit_price: price.amount, currency_id: price.currency }],
+      const productTitle = edition === "en" ? "CRIAI - Build Your Digital Business with AI" : "CRIAI - Crie Seu Negocio Digital com IA";
+      const amount = price.amount.toFixed(2);
+      const orderRequest = {
+        type: "online", processing_mode: "manual", capture_mode: "automatic_async",
+        total_amount: amount, external_reference: "criai_" + id,
+        description: productTitle,
         payer: { email: input.email.trim().toLowerCase() },
-        external_reference: "criai_" + id,
-        back_urls: { success: returnUrl, pending: returnUrl, failure: returnUrl },
-        auto_return: "approved",
-        notification_url: `${Deno.env.get("SUPABASE_URL")}/functions/v1/criai-ebook-gateway/webhook`,
+        items: [{ title: productTitle, quantity: 1, unit_price: amount }],
+        config: { online: {
+          success_url: returnUrl, pending_url: returnUrl, failure_url: returnUrl,
+          auto_return: "approved"
+        } }
       };
-      const mp = await fetch(`${API}/checkout/preferences`, {
+      const mp = await fetch(`${API}/v1/orders`, {
         method: "POST", headers: { Authorization: `Bearer ${envToken()}`,
           "Content-Type": "application/json", "X-Idempotency-Key": id },
-        body: JSON.stringify(preference), signal: AbortSignal.timeout(12000) });
+        body: JSON.stringify(orderRequest), signal: AbortSignal.timeout(12000) });
       const response = await mp.json().catch(() => ({}));
-      if (!mp.ok || typeof response.init_point !== "string") {
+      if (!mp.ok || typeof response.checkout_url !== "string" || !safeMpOrderId(response.id)) {
         await sql!`update criai_private.ebook_orders set payment_state='failed', updated_at=now() where id=${id}::uuid`;
         return json({ error: locale === "en"
           ? "Payment method or USD currency is not available for this merchant account. No charge was made."
           : "Não foi possível abrir o checkout. Nenhuma cobrança foi feita." }, 503);
       }
-      const checkout = new URL(response.init_point);
+      const checkout = new URL(response.checkout_url);
       if (!/^https:$/.test(checkout.protocol) || !/(^|\.)mercadopago\.com(\.br)?$/.test(checkout.hostname)) {
         return json({ error: "Unexpected payment provider response." }, 502);
       }
       await sql!`update criai_private.ebook_orders
-                  set mp_preference_id=${String(response.id)},payment_state='pending',updated_at=now()
+                  set mp_order_id=${String(response.id)},payment_state='pending',updated_at=now()
                   where id=${id}::uuid`;
       return json({ checkout_url: checkout.toString(), order_id: id, access_token: accessToken });
     }
@@ -369,7 +372,7 @@ Deno.serve(async (req: Request) => {
       const check = await verifiedOrder(req);
       if ("error" in check) return json({ error: check.error }, check.code);
       const order = check.order;
-      if (!order || order.payment_state !== "paid" || !order.mp_payment_id) return json({ error: "Payment has not been approved." }, 403);
+      if (!order || order.payment_state !== "paid" || !order.mp_order_id) return json({ error: "Payment has not been approved." }, 403);
       if (!storage) return json({ error: "Secure file service is unavailable." }, 503);
       // A paid order authorizes either language edition of this same guide.
       // The order token and provider-approved payment are checked above on every request.
@@ -389,12 +392,15 @@ Deno.serve(async (req: Request) => {
       const parts = Object.fromEntries(signature.split(",").map(x => x.trim().split("=")));
       const ts = Number(parts.ts);
       const timestampMs = ts < 1e11 ? ts * 1000 : ts;
-      if (!dataId || !requestId || !Number.isFinite(ts) || Math.abs(Date.now() - timestampMs) > 10 * 60 * 1000)
+      if (!safeMpOrderId(dataId) || !requestId || !Number.isFinite(ts) ||
+          Math.abs(Date.now() - timestampMs) > 10 * 60 * 1000)
         return json({ error: "Invalid webhook." }, 401);
-      const expected = await hmacHex(envWebhookSecret(), `id:${dataId.toLowerCase()};request-id:${requestId};ts:${parts.ts};`);
+      const expected = await hmacHex(envWebhookSecret(),
+        `id:${dataId.toLowerCase()};request-id:${requestId};ts:${parts.ts};`);
       if (!fixedTimeHexEqual(expected, parts.v1 || "")) return json({ error: "Invalid webhook signature." }, 401);
-      if (!/^[0-9]{4,32}$/.test(dataId)) return json({ ok: true });
-      await syncPayment(dataId);
+      // A valid signature never grants access; the order is fetched and
+      // independently verified from the Mercado Pago Orders API.
+      await syncOrder(dataId);
       return json({ ok: true });
     }
     return json({ error: "Not found." }, 404);
