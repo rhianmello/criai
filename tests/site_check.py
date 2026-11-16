@@ -170,6 +170,10 @@ if "checkout automático ainda não está disponível" not in ebook:
     fail("apostilas: manual purchase limitation not disclosed")
 if any(tag in ebook for tag in ('href="downloads/', 'href="ebooks/', 'href="apostila-completa.pdf"')):
     fail("apostilas: paid PDF is exposed by a public link")
+if 'id="internacional"' not in ebook or "Consultar compra no exterior" not in ebook:
+    fail("apostilas: international buyer section missing")
+if "cartões internacionais" not in ebook or "R$ 49,90" not in ebook:
+    fail("apostilas: international card and BRL price disclosures missing")
 if "https://criai.xrmovi.com.br/apostilas.html" not in (ROOT / "sitemap.xml").read_text(encoding="utf8"):
     fail("sitemap: editorial product not indexed")
 
