@@ -43,53 +43,62 @@ async function fileReady(edition: "pt" | "en") {
   const rows = await sql`select exists(select 1 from storage.objects where bucket_id = ${BUCKET} and name = ${FILES[edition]}) as ready`;
   return Boolean(rows[0]?.ready);
 }
-async function providerPayment(id: string) {
-  if (!/^[0-9]{4,32}$/.test(id) || !envToken()) return null;
-  const response = await fetch(`${API}/v1/payments/${id}`, {
+// Orders API: never trust a checkout redirect or a webhook payload as proof of payment.
+function safeMpOrderId(value: unknown): value is string {
+  return typeof value === "string" && /^ORD[A-Za-z0-9_-]{12,76}$/.test(value);
+}
+async function providerOrder(id: string) {
+  if (!safeMpOrderId(id) || !envToken()) return null;
+  const response = await fetch(`${API}/v1/orders/${encodeURIComponent(id)}`, {
     headers: { Authorization: `Bearer ${envToken()}`, Accept: "application/json" },
     signal: AbortSignal.timeout(10000),
   });
   if (!response.ok) return null;
   return await response.json();
 }
-function classifyPayment(payment: any) {
-  if (payment.status === "approved") return "paid";
-  if (payment.status === "refunded") return "refunded";
-  if (payment.status === "charged_back") return "chargeback";
-  if (payment.status === "cancelled") return "cancelled";
-  if (payment.status === "rejected") return "failed";
+function classifyOrder(order: any) {
+  if (order?.status === "processed" && order?.status_detail === "accredited") return "paid";
+  if (order?.status === "refunded" || order?.status_detail === "partially_refunded") return "refunded";
+  if (order?.status === "canceled" || order?.status === "cancelled") return "cancelled";
+  if (order?.status === "failed") return "failed";
   return "pending";
 }
-async function syncPayment(paymentId: string) {
+async function syncOrder(mpOrderId: string) {
   if (!sql) return null;
-  const payment = await providerPayment(paymentId);
-  if (!payment) return null;
-  const external = String(payment.external_reference || "");
+  const provider = await providerOrder(mpOrderId);
+  if (!provider || String(provider.id) !== mpOrderId ||
+      provider.type !== "online" || provider.processing_mode !== "manual") return null;
+  const external = String(provider.external_reference || "");
   if (!/^criai_[0-9a-f-]{36}$/i.test(external)) return null;
   const id = external.slice(6);
-  const orders = await sql`select id, amount, currency, mp_payment_id from criai_private.ebook_orders where id = ${id}::uuid limit 1`;
-  if (!orders.length) return null;
-  const order = orders[0];
-  const validAmount = Math.round(Number(payment.transaction_amount) * 100) === Math.round(Number(order.amount) * 100);
-  if (!validAmount || String(payment.currency_id) !== order.currency) return null;
-  if (order.mp_payment_id && order.mp_payment_id !== String(payment.id)) return null;
-  const state = classifyPayment(payment);
-  const rows = await sql`
+  const rows = await sql`select id, amount, currency, mp_order_id from criai_private.ebook_orders
+    where id = ${id}::uuid limit 1`;
+  if (!rows.length) return null;
+  const order = rows[0];
+  if (order.mp_order_id && order.mp_order_id !== mpOrderId) return null;
+  const currency = String(provider.currency || provider.currency_id || "");
+  if (currency !== order.currency ||
+      Math.round(Number(provider.total_amount) * 100) !== Math.round(Number(order.amount) * 100))
+    return null;
+  const state = classifyOrder(provider);
+  if (state === "paid" &&
+      Math.round(Number(provider.total_paid_amount) * 100) !== Math.round(Number(order.amount) * 100))
+    return null;
+  const updated = await sql`
     update criai_private.ebook_orders
-       set payment_state = ${state}, mp_payment_id = ${String(payment.id)},
-           updated_at = now(), last_checked_at = now(),
-           paid_at = case when ${state} = 'paid' then coalesce(paid_at, now()) else paid_at end
-     where id = ${id}::uuid
-       and (mp_payment_id is null or mp_payment_id = ${String(payment.id)})
-     returning id, payment_state`;
-  return rows[0] || null;
+       set payment_state=${state}, mp_order_id=${mpOrderId},
+           updated_at=now(), last_checked_at=now(),
+           paid_at=case when ${state}='paid' then coalesce(paid_at, now()) else paid_at end
+     where id=${id}::uuid and (mp_order_id is null or mp_order_id=${mpOrderId})
+     returning id,payment_state`;
+  return updated[0] || null;
 }
 async function getOrder(input: any) {
   if (!sql) return null;
   const id = safeId(input?.order_id), token = safeToken(input?.access_token);
   if (!id || !token) return null;
   const hash = await digest(token);
-  const rows = await sql`select id,ebook_edition,site_locale,payment_state,mp_payment_id
+  const rows = await sql`select id,ebook_edition,site_locale,payment_state,mp_order_id
     from criai_private.ebook_orders where id=${id}::uuid and access_token_sha256=${hash} limit 1`;
   return rows[0] || null;
 }
@@ -98,13 +107,8 @@ async function verifiedOrder(req: Request) {
   try { input = await bodyJson(req); } catch { return { error: "Invalid request.", code: 400 }; }
   let order = await getOrder(input);
   if (!order) return { error: "Purchase link not found.", code: 404 };
-  const paymentHint = typeof input?.payment_id === "string" && /^[0-9]{4,32}$/.test(input.payment_id) ? input.payment_id : "";
-  if (paymentHint && !order.mp_payment_id) {
-    await syncPayment(paymentHint);
-    order = await getOrder(input);
-  }
-  if (order?.mp_payment_id) {
-    const synced = await syncPayment(order.mp_payment_id);
+  if (order?.mp_order_id) {
+    const synced = await syncOrder(String(order.mp_order_id));
     if (!synced) return { error: "Unable to validate payment with the provider.", code: 503 };
     order = await getOrder(input);
   }
@@ -208,7 +212,7 @@ async function requestRecovery(req: Request) {
     return json(publicAnswer); // Do not reveal whether an email belongs to a purchaser.
   const eligible = Boolean((await recoveryDb(
     "select exists(select 1 from criai_private.ebook_orders " +
-    "where buyer_email=$1 and payment_state='paid' and mp_payment_id is not null) as eligible",
+    "where buyer_email=$1 and payment_state='paid' and mp_order_id is not null) as eligible",
     [email]
   ))[0]?.eligible);
   const code = recoveryCode();
@@ -272,15 +276,15 @@ async function recoveryDownload(req: Request) {
   );
   if (!sessions.length) return json({ error: "Your access has expired. Request another email code." }, 401);
   const orders = await recoveryDb(
-    "select mp_payment_id from criai_private.ebook_orders where buyer_email=$1 and " +
-    "payment_state='paid' and mp_payment_id is not null order by paid_at desc nulls last limit 10",
+    "select mp_order_id from criai_private.ebook_orders where buyer_email=$1 and " +
+    "payment_state='paid' and mp_order_id is not null order by paid_at desc nulls last limit 10",
     [sessions[0].buyer_email]
   );
   if (!orders.length) return json({ error: "No approved purchase was found." }, 403);
   let validPaid = false, providerUnavailable = false;
   for (const order of orders) {
     // Never trust a stored status alone. This rechecks refunds and chargebacks.
-    const state = await syncPayment(String(order.mp_payment_id));
+    const state = await syncOrder(String(order.mp_order_id));
     if (state?.payment_state === "paid") { validPaid = true; break; }
     if (!state) providerUnavailable = true;
   }
