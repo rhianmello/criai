@@ -108,7 +108,7 @@ async function verifiedOrder(req: Request) {
     if (!synced) return { error: "Unable to validate payment with the provider.", code: 503 };
     order = await getOrder(input);
   }
-  return { order };
+  return { order, input };
 }
 async function hmacHex(secret: string, data: string) {
   const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
@@ -188,7 +188,12 @@ Deno.serve(async (req: Request) => {
       const order = check.order;
       if (!order || order.payment_state !== "paid" || !order.mp_payment_id) return json({ error: "Payment has not been approved." }, 403);
       if (!storage) return json({ error: "Secure file service is unavailable." }, 503);
-      const edition = order.ebook_edition as "pt" | "en";
+      // A paid order authorizes either language edition of this same guide.
+      // The order token and provider-approved payment are checked above on every request.
+      const requested = check.input?.edition;
+      if (requested !== undefined && requested !== "pt" && requested !== "en") return json({ error: "Invalid PDF edition." }, 400);
+      const edition: "pt" | "en" = requested === "pt" || requested === "en" ? requested : order.ebook_edition;
+      if (!await fileReady(edition)) return json({ error: "Requested PDF edition is not available yet." }, 503);
       const { data, error } = await storage.storage.from(BUCKET).createSignedUrl(FILES[edition], 120, { download: FILES[edition] });
       if (error || !data?.signedUrl) return json({ error: "Download is temporarily unavailable. Contact support." }, 503);
       return json({ download_url: data.signedUrl, expires_in: 120, edition });
