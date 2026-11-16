@@ -273,10 +273,15 @@ else:
             fail(f"ebook recovery: missing client mechanism {needle}")
     for needle in ('CRIAI_RESEND_API_KEY', 'EdgeRuntime.waitUntil', 'code_digest',
                    'attempts<5', 'verified_at is null', 'token_digest',
-                   'await syncPayment(String(order.mp_payment_id))',
+                   'await syncOrder(String(order.mp_order_id))',
                    'createSignedUrl(FILES[edition], 120'):
         if needle not in recovery_backend:
             fail(f"ebook recovery: missing server security condition {needle}")
+    for needle in ('/v1/orders', 'classifyOrder', 'safeMpOrderId', 'mp_order_id', 'total_paid_amount'):
+        if needle not in recovery_backend:
+            fail(f"ebook gateway: Orders API implementation missing {needle}")
+    if '/checkout/preferences' in recovery_backend:
+        fail("ebook gateway: legacy Preferences API must not be used with Orders application")
     if 'http' in recovery_html and ('/storage/v1/object/public/' in recovery_html or 'criai-ia-pt-2026.pdf' in recovery_html):
         fail("ebook recovery: paid PDF must never be linked from public HTML")
     for page_name, body in (("PT", ebook), ("EN", (ROOT / "en" / "apostilas.html").read_text(encoding="utf8"))):
