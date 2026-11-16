@@ -27,7 +27,7 @@ jobs:
           python -m playwright install --with-deps chromium
       - name: Check public HTTPS, browser, mobile and link format
         run: python tests/remote_smoke.py
-      - name: Check local fiscal admin: encrypted vault, reports, responsive UI
+      - name: "Check local fiscal admin: encrypted vault, reports, responsive UI"
         run: python tests/admin_browser.py
       - name: Save evidence
         if: always()
