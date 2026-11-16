@@ -7,7 +7,7 @@ import re
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
-PAGES = ["index.html", "leadlovers.html", "sobre.html", "privacidade.html"]
+PAGES = ["index.html", "leadlovers.html", "sobre.html", "privacidade.html", "apostilas.html"]
 DOMAIN = "https://criai.xrmovi.com.br"
 errors = []
 
@@ -93,7 +93,7 @@ for name, p in pages.items():
         if not re.fullmatch(r"https://go\.hotmart\.com/[A-Za-z0-9]+(?:\?.*)?", href):
             fail(f"{name}: invalid direct Hotmart link format")
 
-for filename in ("robots.txt", "sitemap.xml", "assets/config.js", "assets/style.css", "assets/app.js", "assets/favicon.svg", "CNAME"):
+for filename in ("robots.txt", "sitemap.xml", "assets/config.js", "assets/style.css", "assets/apostilas.css", "assets/guia-negocio-ia.svg", "assets/app.js", "assets/favicon.svg", "CNAME"):
     if not (ROOT / filename).is_file():
         fail(f"missing file: {filename}")
 for filename in ("robots.txt", "sitemap.xml", "assets/config.js"):
@@ -166,3 +166,14 @@ if errors:
     for e in errors: print(" -", e)
     sys.exit(1)
 print(f"CRIAÍ static checks PASS: {len(PAGES)} pages, internal links, canonical, assets, affiliate format and consent markers.")
+
+# Próprio produto editorial deve ser distinto das indicações e não expor PDF integral.
+ebook = (ROOT / "apostilas.html").read_text(encoding="utf8")
+if "R$ 49,90" not in ebook or 'id="amostra"' not in ebook:
+    fail("apostilas: price or free sample section missing")
+if "checkout automático ainda não está disponível" not in ebook:
+    fail("apostilas: manual purchase limitation not disclosed")
+if any(tag in ebook for tag in ('href="downloads/', 'href="ebooks/', 'href="apostila-completa.pdf"')):
+    fail("apostilas: paid PDF is exposed by a public link")
+if "https://criai.xrmovi.com.br/apostilas.html" not in (ROOT / "sitemap.xml").read_text(encoding="utf8"):
+    fail("sitemap: editorial product not indexed")
