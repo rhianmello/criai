@@ -1,43 +1,41 @@
-# CRIAÍ — desenho técnico do painel gerencial privado (proposta, não implantado)
+# CRIAÍ — Painel de gestão fiscal (implantação local inicial)
 
-## Objetivo
+**Publicação:** 16/11/2026. **Acesso:** /admin/ ou /admin/index.html no domínio CRIAÍ.
 
-Mostrar indicadores comprováveis sem expor dados comerciais no GitHub Pages público. O front público deve continuar somente com conteúdo e `GA4` opcional mediante consentimento.
+## O que foi implementado
 
-## Indicadores e definição
+- Painel responsivo com menu lateral à esquerda.
+- Cofre local criptografado com Web Crypto AES-256-GCM e chave derivada de senha por PBKDF2-SHA256 com 600.000 iterações.
+- Cadastro de e-mail e **nova senha criada no primeiro acesso**. **Não há autenticação de servidor**. Nenhum par usuário/senha foi gravado no repositório.
+- Transações Hotmart cadastradas manualmente ou via CSV. Duplicatas identificadas por ID de transação.
+- NFS-e registradas **somente após emissão externa válida**; associação por transação. O painel não gera documento fiscal real.
+- Geração de relatório mensal CSV e impressão para PDF com dados de comissão, transação, número e emissão da NFS-e.
+- Preparação de e-mail para contabilidade@leadlovers.com.br **sem envio nem anexos automáticos**; marcação manual de envio.
+- Despesas manuais do CRIAÍ, indicadores sem valores fictícios, checklist fiscal e estimativa do 5º dia útil.
+- Exportação/restauração de backup **criptografado** entre navegadores. Bloqueio após 15 minutos inativos.
+- Links oficiais: https://www.nfse.gov.br/EmissorNacional/Login e https://www.leadlovers.com/politicas-sobre-parcerias.
 
-| Indicador | Fonte real e lógica |
-|---|---|
-| Visitantes e sessões | GA4 Data API; somente dados coletados legitimamente após consentimento |
-| Origem de tráfego | GA4: dimensões de canal, source/medium, campanha |
-| Páginas mais vistas | GA4: `page_path`, `page_view` |
-| Visualizações da oferta | GA4: `view_item`, produto `hotmart_42903` |
-| Cliques em links afiliados | GA4: `affiliate_click`, `product_id` |
-| Taxa de cliques nas ofertas | `affiliate_click / visualizações da página da oferta`, no mesmo período |
-| Custo de anúncios | Google Ads API/relatório exportado da campanha do CRIAÍ, nunca do XRMOVI |
-| Comissões reais | Hotmart por exportação autorizada/API oficial, status de cada transação e estorno |
-| Lucro estimado | Comissões previstas menos gasto, marcado expressamente como estimativa |
-| Resultado financeiro efetivo | Comissões confirmadas/recebidas menos gasto comprovado, com critérios contábeis claros |
+## Segurança e limitações importantes
 
-Atribuição entre GA4, anúncios e Hotmart pode ser incompleta por bloqueadores de cookies, opt-out, múltiplos dispositivos e regras de atribuição. Não equiparar `affiliate_click` com venda nem prometer rastreio de todos os clientes.
+Esta implementação é **local-first**, não é um sistema privado completo com autenticação server-side:
+- O HTML/JS/CSS é público por se tratar de GitHub Pages. Dados são criptografados antes de gravados no armazenamento do navegador, e a chave só existe em memória durante a sessão.
+- No primeiro acesso qualquer pessoa consegue criar o seu próprio cofre em **outro** navegador; isso não concede acesso ao cofre do proprietário. O cofre não pode ser compartilhado automaticamente entre dispositivos.
+- Com senha fraca, dispositivo comprometido, extensão maliciosa ou falha de XSS no mesmo domínio, há riscos residuais. Não registre CPF de compradores, dados de cartão, segredos ou PDFs fiscais de terceiros no cofre.
+- Dados do cofre **não são backups na nuvem**. Faça download do backup criptografado frequentemente e guarde com segurança. Limpar dados do site remove o cofre do navegador.
+- Nenhuma API Hotmart/GA4/Google Ads/NFS-e foi conectada. Não há consulta de comissões ou faturamento em tempo real.
+- Não existe recuperação de senha. A senha que foi escrita na conversa do usuário não foi incorporada ao código; no primeiro acesso, o usuário deve definir uma **senha nova, exclusiva e robusta**.
+- O projeto do Supabase XRMOVI contém o esquema isolado criai_private documentado anteriormente, porém este painel fiscal **não consulta nem altera** aquele esquema ou os dados do XRMOVI. Para um painel online sincronizado recomenda-se projeto isolado, Auth, RLS e auditoria de acesso.
 
-## Arquitetura recomendada
+## Regras fiscais e prazo
 
-- Um novo backend isolado do XRMOVI (pode ser um novo projeto privado Supabase), com autenticação e autorização somente para proprietário.
-- Rotinas de consulta à GA4 Data API e à conta de anúncios pelo servidor, usando credenciais armazenadas apenas em secrets.
-- Importação autorizada de relatórios Hotmart ou API oficial com atualização auditável, sem presumir que tenha API disponível.
-- Políticas de acesso restritas por usuário/role, MFA para proprietário, logs de acesso e trilha de alterações.
-- Agregações por dia, canal, campanha e produto; evitar persistir dados pessoais dos visitantes ou dados financeiros sensíveis sem necessidade.
-- Interface privada e separada do repositório GitHub Pages, com métricas em estado vazio até dados reais estarem conectados.
-- Exibir quando cada integração foi atualizada e alertas de dados faltantes.
+Fonte oficial: https://www.leadlovers.com/politicas-sobre-parcerias
 
-## Fases
+A Leadlovers exige nota fiscal de serviço pela atuação comissionada, de pessoa física ou jurídica, e relatório que relacione as transações às notas. Os documentos devem ser enviados mensalmente até o quinto dia útil para contabilidade@leadlovers.com.br.
 
-1. Confirmar acesso à GA4 e identidade/propriedade.
-2. Conectar GA4 e testar contagem de eventos com consentimento em DebugView.
-3. Criar painel privado sem publicar URL/token administrativo.
-4. Integrar despesas de campanha do CRIAÍ.
-5. Integrar receitas comprovadas da Hotmart com autorização.
-6. Implementar indicadores, filtro por período, exportação e auditoria de qualidade.
+A tela informa uma **estimativa** do quinto dia útil do mês seguinte à competência, desconsiderando apenas fins de semana e feriados nacionais fixos. Feriados municipais/estaduais e móveis devem ser conferidos manualmente.
 
-**Status:** somente proposta técnica. Nenhum banco, dashboard administrativo ou integração de dados foi criado nesta etapa.
+O portal https://www.nfse.gov.br/EmissorNacional/Login pode ser usado por PF apenas quando cadastrado e habilitado conforme a legislação do município. O emissor oficial é quem gera documentos fiscais válidos.
+
+## Evolução posterior
+
+Para autenticação pelo mesmo e-mail em todos os dispositivos, armazenamento centralizado, anexos fiscais e integração API oficial, será necessário provisionar backend dedicado ou aprovar o uso de outro ambiente, validar custos e estabelecer RLS, MFA, backups e integração fiscal autorizada. **Não usar senha hardcoded nem credencial de serviço no frontend.**

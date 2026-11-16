@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta name="color-scheme" content="light">
+  <meta name="description" content="Área de gestão fiscal local do CRIAÍ: comissões, notas fiscais, relatórios e prazos.">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; font-src 'self'; form-action 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; upgrade-insecure-requests">
+  <title>CRIAÍ Gestão | Comissões e NFS-e</title>
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="painel.css">
+  <script src="painel.js" defer></script>
+</head>
+<body>
+<section class="access-screen" id="accessScreen">
+  <div class="access-card">
+    <div class="brand brand-login"><span class="brand-symbol">C<span>.</span></span><span>CRIA<span>Í</span> <small>GESTÃO</small></span></div>
+    <span class="eyebrow">PAINEL FISCAL • COFRE LOCAL</span>
+    <h1 id="accessTitle">Acesse seu painel</h1>
+    <p class="muted" id="accessDescription">Seus registros ficam criptografados neste navegador. O acesso não está sincronizado entre aparelhos.</p>
+    <div class="notice warning" role="note"><strong>Segurança importante</strong><p>Esta primeira versão funciona como um cofre criptografado no navegador, e não como login em servidor. Use uma senha nova e exclusiva. Não utilize sua senha compartilhada em conversas ou outros serviços.</p></div>
+    <form id="accessForm" autocomplete="off">
+      <label for="accessEmail">E-mail do proprietário</label>
+      <input type="email" id="accessEmail" autocomplete="username" required placeholder="seu@email.com" spellcheck="false" maxlength="150">
+      <label for="accessPassword">Senha do cofre</label>
+      <input type="password" id="accessPassword" autocomplete="new-password" required placeholder="Senha exclusiva" minlength="12">
+      <div id="confirmWrap" hidden><label for="confirmPassword">Confirme a senha nova</label><input type="password" id="confirmPassword" autocomplete="new-password" minlength="12"></div>
+      <p id="accessError" class="form-error" role="alert" hidden></p>
+      <button class="btn btn-primary full" id="accessSubmit" type="submit">Abrir painel</button>
+    </form>
+    <div class="access-foot">
+      <button type="button" class="text-button" id="importAccess">Restaurar backup criptografado</button>
+      <a href="../index.html">Voltar ao CRIAÍ</a>
+    </div>
+    <p class="fineprint">Não salvamos senhas no site, no GitHub nem em serviços externos. Se você perder a senha e não tiver um backup recuperável, os dados locais não poderão ser recuperados.</p>
+  </div>
+</section>
+<div class="app-shell" id="appShell" hidden>
+  <aside class="sidebar" id="sidebar">
+    <a class="brand" href="../index.html" aria-label="Voltar para o site CRIAÍ"><span class="brand-symbol">C<span>.</span></span><span>CRIA<span>Í</span> <small>GESTÃO</small></span></a>
+    <div class="sidebar-caption">CENTRAL FINANCEIRA</div>
+    <nav class="side-nav" aria-label="Menu principal">
+      <button type="button" data-route="overview" class="active"><span class="nav-icon">▦</span> Visão geral</button>
+      <button type="button" data-route="transactions"><span class="nav-icon">▤</span> Transações</button>
+      <button type="button" data-route="invoices"><span class="nav-icon">▧</span> Notas fiscais</button>
+      <button type="button" data-route="reports"><span class="nav-icon">▥</span> Relatórios</button>
+      <button type="button" data-route="expenses"><span class="nav-icon">◴</span> Despesas</button>
+      <button type="button" data-route="compliance"><span class="nav-icon">✓</span> Prazos e regras</button>
+      <button type="button" data-route="settings"><span class="nav-icon">⚙</span> Configurações</button>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="side-context"><span class="status-dot"></span> Dados locais criptografados</div>
+      <button type="button" class="btn btn-outline btn-sidebar" id="btnLock">Sair e bloquear</button>
+    </div>
+  </aside>
+  <div class="sidebar-backdrop" id="sidebarBackdrop" hidden></div>
+  <div class="main-wrap">
+    <header class="topbar">
+      <button type="button" id="menuToggle" class="icon-button mobile-only" aria-label="Abrir menu">☰</button>
+      <div><div class="top-kicker">ÁREA DO PROPRIETÁRIO</div><h2 id="topTitle">Visão geral</h2></div>
+      <div class="top-actions">
+        <label class="month-control">Competência <input type="month" id="monthPicker" aria-label="Competência"></label>
+        <div class="user-chip" id="userChip">Proprietário</div>
+      </div>
+    </header>
+    <main class="main-content">
+      <div class="global-alert"><strong>Dados reais, sem simulações.</strong> Cadastre/importa somente transações confirmadas pela Hotmart. Clique de afiliado não é venda. A emissão oficial da NFS-e é externa ao CRIAÍ.</div>
+
+      <section class="view active" id="view-overview">
+        <div class="section-heading"><div><span class="eyebrow">RESUMO DA COMPETÊNCIA</span><h1>Seu negócio, em números</h1><p>Valores baseados apenas nos registros que você lançar no painel.</p></div><button type="button" data-open-dialog="transactionDialog" class="btn btn-primary">+ Nova comissão</button></div>
+        <div class="kpi-grid" id="kpiGrid"></div>
+        <div class="two-columns">
+          <article class="panel"><div class="panel-head"><h3>Comissões por situação</h3><span class="tag">Hotmart • manual</span></div><div id="statusBars"></div></article>
+          <article class="panel"><div class="panel-head"><h3>Próximas ações</h3><span class="tag">Fiscal</span></div><div id="overviewActions"></div></article>
+        </div>
+        <article class="panel"><div class="panel-head"><h3>Transações recentes</h3><button type="button" class="text-button" data-route="transactions">Ver todas →</button></div><div class="table-scroller"><table><thead><tr><th>Data</th><th>ID Hotmart</th><th>Comissão</th><th>Situação</th><th>NF-e vinculada</th></tr></thead><tbody id="recentTransactions"></tbody></table></div></article>
+      </section>
+
+      <section class="view" id="view-transactions" hidden>
+        <div class="section-heading"><div><span class="eyebrow">HOTMART</span><h1>Comissões e transações</h1><p>Controle por identificador de transação. Não cadastre compradores ou dados pessoais desnecessários.</p></div><button type="button" data-open-dialog="transactionDialog" class="btn btn-primary">+ Cadastrar transação</button></div>
+        <div class="panel toolbar"><label class="search-field">Pesquisar ID ou produto <input type="search" id="transactionSearch" placeholder="Buscar transação"></label><button type="button" id="btnImportCsv" class="btn btn-secondary">Importar CSV da Hotmart</button><button type="button" id="btnTemplateCsv" class="btn btn-ghost">Modelo CSV</button><button type="button" id="btnExportTransactions" class="btn btn-ghost">Exportar CSV</button></div>
+        <div class="panel"><div class="table-scroller"><table><thead><tr><th>Data</th><th>ID da transação</th><th>Produto</th><th>Comissão (R$)</th><th>Status</th><th>NFS-e</th><th>Ações</th></tr></thead><tbody id="transactionsBody"></tbody></table></div></div>
+        <div class="notice info"><strong>Importação de CSV</strong><p>O importador aceita o modelo CRIAÍ e reconhece algumas colunas comuns da Hotmart. Confira sempre os valores e os status após importar. Não há conexão automática com sua conta Hotmart.</p></div>
+      </section>
+
+      <section class="view" id="view-invoices" hidden>
+        <div class="section-heading"><div><span class="eyebrow">OBRIGAÇÕES FISCAIS</span><h1>Notas fiscais de serviço</h1><p>Registre documentos fiscais efetivamente emitidos, depois vincule-os às transações comissionadas.</p></div><button type="button" data-open-dialog="invoiceDialog" class="btn btn-primary">+ Registrar NFS-e</button></div>
+        <div class="panel intro-panel"><div><strong>Emitir no portal oficial</strong><p>O CRIAÍ não emite notas por conta própria. Para PF, a emissão depende do cadastro e da legislação municipal; para empresas, depende das regras aplicáveis. Confirme com a prefeitura ou contador.</p></div><a class="btn btn-primary" href="https://www.nfse.gov.br/EmissorNacional/Login" target="_blank" rel="noopener noreferrer">Abrir emissor nacional ↗</a></div>
+        <div class="panel"><div class="table-scroller"><table><thead><tr><th>Emissão</th><th>Número</th><th>Valor (R$)</th><th>Transações</th><th>Situação</th><th>Acesso</th><th>Ações</th></tr></thead><tbody id="invoicesBody"></tbody></table></div></div>
+        <p class="fineprint">Não confunda nota fiscal de serviços (NFS-e) com nota de produto (NF-e). Este painel registra metadados; os documentos fiscais originais continuam sendo os emitidos por autoridade competente.</p>
+      </section>
+
+      <section class="view" id="view-reports" hidden>
+        <div class="section-heading"><div><span class="eyebrow">DOCUMENTAÇÃO PARA O PRODUTOR</span><h1>Relatório mensal</h1><p>Relação entre cada transação comissionada e sua NFS-e correspondente, conforme as regras da Leadlovers.</p></div><div class="button-row"><button type="button" id="btnReportCsv" class="btn btn-secondary">Baixar CSV</button><button type="button" id="btnReportPrint" class="btn btn-primary">Imprimir / salvar PDF</button></div></div>
+        <div class="panel report-print" id="printReport"><div class="report-letterhead"><div><strong>CRIAÍ — RELATÓRIO DE COMISSÕES</strong><p>Relatório auxiliar de conciliação: transações x NFS-e</p></div><div id="reportMonthLabel"></div></div><div id="reportSummary"></div><div class="table-scroller"><table><thead><tr><th>Transação</th><th>Data</th><th>Comissão (R$)</th><th>Status</th><th>NFS-e nº</th><th>Data de emissão</th><th>Situação fiscal</th></tr></thead><tbody id="reportBody"></tbody></table></div><div class="report-footer"><span>Origem: registros manuais ou CSV importado da Hotmart.</span><span id="reportGenerated"></span></div></div>
+        <div class="panel submit-panel"><div><h3>Entrega à contabilidade da Leadlovers</h3><p>Envie por e-mail os arquivos das NFS-e emitidas e o relatório mensal. O botão abaixo prepara um e-mail; <strong>você precisa anexar manualmente os documentos e confirmar o envio</strong>.</p><div id="reportSubmission"></div></div><div class="button-row"><a id="btnPrepareEmail" class="btn btn-secondary" href="mailto:contabilidade@leadlovers.com.br">Preparar e-mail ↗</a><button type="button" id="btnMarkSent" class="btn btn-primary">Registrar envio</button></div></div>
+      </section>
+
+      <section class="view" id="view-expenses" hidden>
+        <div class="section-heading"><div><span class="eyebrow">CUSTOS E RESULTADO</span><h1>Despesas</h1><p>Registre os gastos do CRIAÍ, incluindo Google Ads. Este painel não consulta automaticamente a conta de anúncios.</p></div><button type="button" data-open-dialog="expenseDialog" class="btn btn-primary">+ Registrar despesa</button></div>
+        <div class="panel"><div class="table-scroller"><table><thead><tr><th>Data</th><th>Categoria</th><th>Descrição</th><th>Valor (R$)</th><th>Ações</th></tr></thead><tbody id="expensesBody"></tbody></table></div></div>
+      </section>
+
+      <section class="view" id="view-compliance" hidden>
+        <div class="section-heading"><div><span class="eyebrow">CHECKLIST FISCAL</span><h1>Prazos e requisitos</h1><p>Regras de parceria Leadlovers. A estimativa de dia útil deve ser validada considerando feriados locais.</p></div><a class="btn btn-secondary" href="https://www.leadlovers.com/politicas-sobre-parcerias" target="_blank" rel="noopener noreferrer">Política oficial ↗</a></div>
+        <div class="deadline-card"><div><span class="eyebrow">DATA PREVISTA DE ENTREGA</span><h3 id="deadlineLabel">—</h3><p id="deadlineNote">Até o quinto dia útil do mês seguinte à competência. Confirme feriados municipais/estaduais.</p></div><span class="deadline-icon">▣</span></div>
+        <div class="panel"><h3>Verificação da competência</h3><div id="complianceChecklist"></div></div>
+        <div class="two-columns"><div class="panel"><h3>Obrigatório segundo a Leadlovers</h3><ol class="rule-list"><li>Emitir NFS-e referente à atuação comissionada em cada venda.</li><li>Emitir relatório que relacione transações e notas fiscais.</li><li>Enviar NFS-e e relatório até o quinto dia útil de cada mês.</li><li>Destinatário informado na política: <strong>contabilidade@leadlovers.com.br</strong>.</li></ol></div><div class="panel"><h3>Links oficiais</h3><div class="link-list"><a href="https://www.nfse.gov.br/EmissorNacional/Login" target="_blank" rel="noopener noreferrer">Emissor Nacional NFS-e ↗</a><a href="https://www.gov.br/pt-br/servicos/emitir-nota-fiscal-de-servico-eletronica" target="_blank" rel="noopener noreferrer">Orientações GOV.BR ↗</a><a href="https://www.leadlovers.com/politicas-sobre-parcerias" target="_blank" rel="noopener noreferrer">Regras Leadlovers ↗</a></div><p class="fineprint">O enquadramento fiscal e a possibilidade de emissão por pessoa física dependem do município. Consulte a prefeitura ou contador antes de emitir.</p></div></div>
+      </section>
+
+      <section class="view" id="view-settings" hidden>
+        <div class="section-heading"><div><span class="eyebrow">DADOS E SEGURANÇA</span><h1>Configurações e backup</h1><p>Gerencie seu cofre local. Cada navegador ou aparelho tem armazenamento independente.</p></div></div>
+        <div class="two-columns">
+          <div class="panel"><h3>Identificação para relatórios</h3><form id="settingsForm"><label for="issuerName">Nome/razão social do emissor</label><input id="issuerName" name="issuerName" placeholder="Nome usado na NFS-e" maxlength="140"><label for="issuerTax">CPF/CNPJ do emissor (opcional)</label><input id="issuerTax" name="issuerTax" placeholder="Somente se necessário para relatório" maxlength="20"><label for="municipality">Município da emissão</label><input id="municipality" name="municipality" placeholder="Município" maxlength="100"><label for="recipientName">Razão social tomador da NFS-e</label><input id="recipientName" name="recipientName" placeholder="Confirme com a Leadlovers" maxlength="160"><label for="recipientTax">CNPJ do tomador</label><input id="recipientTax" name="recipientTax" placeholder="Confirme o tomador antes de emitir" maxlength="20"><button type="submit" class="btn btn-primary">Salvar identificação</button></form></div>
+          <div class="panel"><h3>Backup e recuperação</h3><p>O backup guarda apenas dados criptografados. Guarde uma cópia fora do computador e não compartilhe o arquivo nem a senha.</p><div class="vertical-actions"><button type="button" class="btn btn-secondary" id="btnExportBackup">Baixar backup criptografado</button><button type="button" class="btn btn-ghost" id="btnImportBackup">Restaurar backup</button><button type="button" class="btn btn-outline" id="btnLockSettings">Bloquear cofre</button></div><div class="notice warning"><strong>Limitação atual</strong><p>Sem sincronização de dados, sem integração direta Hotmart e sem emissão fiscal via API. Evite registrar CPF de compradores, documentos sensíveis ou informações que não sejam necessárias para conciliação.</p></div></div>
+        </div>
+      </section>
+      <p class="site-end">CRIAÍ • Controle auxiliar particular • Relatórios não substituem escrituração, NFS-e oficial nem orientação contábil.</p>
+    </main>
+  </div>
+</div>
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+<input type="file" id="csvFile" accept=".csv,text/csv" hidden>
+<input type="file" id="backupFile" accept=".json,application/json" hidden>
+
+<dialog id="transactionDialog" class="edit-dialog"><form id="transactionForm" class="edit-form"><div class="dialog-head"><div><span class="eyebrow">HOTMART</span><h2 id="transactionDialogTitle">Registrar comissão</h2></div><button type="button" data-close-dialog="transactionDialog" class="icon-button" aria-label="Fechar">✕</button></div><input type="hidden" id="transactionId">
+  <div class="form-grid"><div><label for="txnDate">Data da transação *</label><input type="date" id="txnDate" required></div><div><label for="txnOrder">Código da transação Hotmart *</label><input id="txnOrder" maxlength="110" required placeholder="ID da Hotmart" autocomplete="off"></div></div>
+  <div class="form-grid"><div><label for="txnProduct">Produto</label><input id="txnProduct" maxlength="130" value="Leadlovers"></div><div><label for="txnCommission">Comissão (R$) *</label><input type="number" id="txnCommission" min="0" max="99999999" step="0.01" required placeholder="0,00"></div></div>
+  <div class="form-grid"><div><label for="txnStatus">Status na Hotmart</label><select id="txnStatus"><option value="pending">Pendente</option><option value="approved">Aprovada</option><option value="available">Disponível</option><option value="received">Recebida</option><option value="refunded">Estornada/cancelada</option></select></div><div><label for="txnInvoice">Vincular NFS-e</label><select id="txnInvoice"><option value="">Sem nota vinculada</option></select></div></div>
+  <label for="txnNotes">Observações (opcional)</label><textarea id="txnNotes" rows="2" maxlength="700" placeholder="Ex.: parcela 1/12"></textarea>
+  <div class="dialog-actions"><button type="button" class="btn btn-ghost" data-close-dialog="transactionDialog">Cancelar</button><button type="submit" class="btn btn-primary">Salvar transação</button></div>
+</form></dialog>
+
+<dialog id="invoiceDialog" class="edit-dialog"><form id="invoiceForm" class="edit-form"><div class="dialog-head"><div><span class="eyebrow">NFS-e OFICIAL</span><h2 id="invoiceDialogTitle">Registrar nota fiscal</h2></div><button type="button" data-close-dialog="invoiceDialog" class="icon-button" aria-label="Fechar">✕</button></div><input type="hidden" id="invoiceId">
+  <div class="form-grid"><div><label for="nfNumber">Número da NFS-e *</label><input id="nfNumber" required maxlength="100" placeholder="Nº emitido no portal"></div><div><label for="nfDate">Data da emissão *</label><input type="date" id="nfDate" required></div></div>
+  <div class="form-grid"><div><label for="nfAmount">Valor da nota (R$) *</label><input type="number" id="nfAmount" min="0" step="0.01" required></div><div><label for="nfStatus">Situação do documento</label><select id="nfStatus"><option value="issued">Emitida</option><option value="sent">Enviada à contabilidade</option></select></div></div>
+  <label for="nfVerify">Código de verificação (opcional)</label><input id="nfVerify" maxlength="150" placeholder="Código do portal emissor">
+  <label for="nfUrl">Link oficial de consulta da NFS-e (opcional)</label><input id="nfUrl" type="url" maxlength="500" placeholder="https://...">
+  <label for="nfNotes">Observações</label><textarea id="nfNotes" rows="2" maxlength="700"></textarea>
+  <p class="fineprint">Preencha somente com dados de nota realmente emitida. Este cadastro não gera documento fiscal.</p>
+  <div class="dialog-actions"><button type="button" class="btn btn-ghost" data-close-dialog="invoiceDialog">Cancelar</button><button type="submit" class="btn btn-primary">Salvar nota</button></div>
+</form></dialog>
+
+<dialog id="expenseDialog" class="edit-dialog"><form id="expenseForm" class="edit-form"><div class="dialog-head"><div><span class="eyebrow">CUSTOS</span><h2 id="expenseDialogTitle">Registrar despesa</h2></div><button type="button" data-close-dialog="expenseDialog" class="icon-button" aria-label="Fechar">✕</button></div><input type="hidden" id="expenseId">
+  <div class="form-grid"><div><label for="expDate">Data *</label><input type="date" id="expDate" required></div><div><label for="expCategory">Categoria</label><select id="expCategory"><option>Google Ads</option><option>Domínio</option><option>Ferramenta</option><option>Serviços</option><option>Outros</option></select></div></div>
+  <label for="expDescription">Descrição *</label><input id="expDescription" maxlength="180" required placeholder="Ex.: Campanha 2 — CRIAÍ">
+  <label for="expAmount">Valor pago (R$) *</label><input type="number" id="expAmount" min="0" step="0.01" required>
+  <div class="dialog-actions"><button type="button" class="btn btn-ghost" data-close-dialog="expenseDialog">Cancelar</button><button type="submit" class="btn btn-primary">Salvar despesa</button></div>
+</form></dialog>
+</body>
+</html>

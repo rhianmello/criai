@@ -13,8 +13,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Check HTML, links, canonical domain and consent markers
-        run: python3 tests/site_check.py
+        run: |
+          python3 tests/site_check.py
+          python3 tests/admin_check.py
       - name: Validate JavaScript syntax
         run: |
           node --check assets/app.js
           node --check assets/config.js
+          node --check admin/painel.js
