@@ -161,11 +161,6 @@ config = (ROOT / "assets/config.js").read_text(encoding="utf8")
 if "ga4MeasurementId: ''" not in config:
     print("NOTE: GA4 Measurement ID configured; confirm consent in a real browser")
 
-if errors:
-    print("CRIAÍ site checks FAILED:")
-    for e in errors: print(" -", e)
-    sys.exit(1)
-print(f"CRIAÍ static checks PASS: {len(PAGES)} pages, internal links, canonical, assets, affiliate format and consent markers.")
 
 # Próprio produto editorial deve ser distinto das indicações e não expor PDF integral.
 ebook = (ROOT / "apostilas.html").read_text(encoding="utf8")
@@ -177,3 +172,9 @@ if any(tag in ebook for tag in ('href="downloads/', 'href="ebooks/', 'href="apos
     fail("apostilas: paid PDF is exposed by a public link")
 if "https://criai.xrmovi.com.br/apostilas.html" not in (ROOT / "sitemap.xml").read_text(encoding="utf8"):
     fail("sitemap: editorial product not indexed")
+
+if errors:
+    print("CRIAÍ site checks FAILED:")
+    for e in errors: print(" -", e)
+    sys.exit(1)
+print(f"CRIAÍ static checks PASS: {len(PAGES)} pages, internal links, canonical, assets, affiliate format and consent markers.")
