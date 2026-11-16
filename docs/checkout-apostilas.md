@@ -24,6 +24,25 @@
 9. Antes de divulgar checkout: homologar status aprovado, recusado, pendente, repetição do webhook, callback inválido, comprador não autenticado, tentativa de download sem pagar, reembolso, links vencidos e fluxo mobile.
 10. Substituir o CTA manual pelo checkout **somente depois** da homologação, sem inventar vendas ou aprovações.
 
+## Requisitos internacionais (vendas em português fora do Brasil)
+
+- Mercados prioritários: Brasil, Portugal, EUA, Canadá, Reino Unido, Angola, Moçambique e outros países. Não bloquear por geolocalização nem depender de telefone/CPF brasileiro na página de venda.
+- Operação inicial em português do Brasil; textos de pagamento, entrega, suporte e reembolso em português claro. Compatibilizar formulários com endereços internacionais.
+- Mercado Pago Brasil Checkout Pro: processa operações em BRL, aceita cartões internacionais das bandeiras elegíveis, mas a aceitação efetiva depende do emissor e análise antifraude. Não assumir aprovação automática ou a disponibilidade de Pix para não residentes.
+- Cobrança internacional: deixar R$ 49,90 visível; informar conversão e custos possíveis do banco emissor; não publicar estimativas fixas de USD/EUR como se fossem cotação em tempo real.
+- Na criação de pedido: aceitar país selecionado de qualquer território; nunca tomar uma informação controlada pelo navegador como prova de identidade. Não restringir pagamento a `pt-BR` como país de cobrança.
+- No pagamento: registrar país informado (quando necessário), moeda de cobrança, valor efetivamente aprovado, identificação do pagamento, estornos e custos por transação. Não recolher documentos pessoais se não forem exigidos para compra/faturamento.
+- Preferência por um único checkout no lançamento. Se forem observadas recusas excessivas no exterior, avaliar plataforma de venda de infoprodutos com distribuição internacional (por exemplo, Hotmart como **produtor**, distinta da afiliação Leadlovers), após aferir taxas, repasses e condições fiscais.
+- Para UE/Portugal e outros destinos, revisar IVA, regras de consumo e cobrança internacional com contador antes de aumentar escala; nunca deduzir automaticamente isenção só por ser um produto digital.
+- Homologar compras em 3 situações: cartão emitido no Brasil, cartão internacional nos EUA e cartão internacional em Portugal; além de pagamento recusado, estorno e comprador sem CPF. Usar ambientes de teste e transações permitidas pelo provedor.
+- Não ativar campanha internacional nem prometer entrega instantânea até ocorrer validação ponta a ponta de pagamento aprovado + arquivo privado.
+
+### Referências do provedor
+- https://www.mercadopago.com.br/blog/como-receber-pagamentos-internacionais-sem-perder-controle
+- https://www.mercadopago.com.br/developers/pt/reference/online-payments/checkout-pro-preferences/overview
+- https://www.mercadopago.com.br/developers/pt/docs/checkout-pro-preferences/configure-back-urls
+- https://www.mercadopago.com.br/developers/pt/docs/checkout-pro-preferences/payment-notifications
+
 ## Bloqueadores reais
 - Confirmar identificação do recebedor, ambiente e credenciais de integração de pagamentos para o CRIAÍ, concedendo acesso por painel seguro e não pelo código-fonte.
 - Definir serviço de backend e armazenamento privado separado, com política de retenção e backup.
