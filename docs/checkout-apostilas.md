@@ -22,10 +22,10 @@ O produto base tem duas variantes de **conteúdo integral** e **67 páginas** ca
 
 - As duas páginas públicas de venda (`/apostilas.html` e `/en/apostilas.html`) apresentam **Português / English** antes do CTA.
 - `assets/ebook-language.js` acrescenta o SKU e o idioma escolhido ao pedido **manual por e-mail**; essa informação ainda não é um registro seguro de ordem paga.
-- Depois da integração, a preferência selecionada precisa ser **gravada no pedido do servidor** e imutável para aquele pagamento, e o download deve servir unicamente o PDF associado à variante paga.
+- Depois da integração, o pedido pago concede acesso ao **produto CRIAÍ EBOOK IA 01** e sua tela privada de downloads deve permitir **escolher Português ou English na hora do download**. A preferência informada antes da compra pode ser registrada para conveniência, mas não pode impedir que o comprador escolha outro idioma na tela de entrega. Cada download deve validar a autorização do pedido no servidor.
 - Preço inicial igual para ambas as edições: **R$ 49,90**, sujeito a ajustes comerciais futuros.
 - Arquivos integrais nunca entram no GitHub Pages, em links públicos nem na pasta estática do site. Guardar ambos em storage privado e liberar links temporários após confirmação autenticada do pagamento.
-- Na homologação: selecionar PT e receber PT, selecionar EN e receber EN, recusar SKU adulterado, link expirado, compra pendente, compra cancelada e troca de variante não autorizada.
+- Na homologação: compra aprovada abre página protegida com **duas opções de download**, PT e EN; cada botão entrega somente sua edição; compra pendente ou recusada não dá acesso; links expiram; pedidos reembolsados são tratados conforme termos; mudança de idioma na tela protegida não altera o valor do pagamento.
 - As prévias podem ser públicas, mas devem conter apenas trechos limitados; não usar a mesma URL para o arquivo pago.
 - O site oferece as edições em ambos os idiomas independentemente do idioma da interface e do país de residência.
 
