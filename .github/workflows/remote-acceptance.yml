@@ -11,6 +11,8 @@ on:
       - "sobre.html"
       - "privacidade.html"
       - "assets/**"
+      - "en/**"
+      - "tests/site_check.py"
       - "admin/**"
       - "tests/admin_browser.py"
 permissions:
