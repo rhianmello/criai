@@ -3,6 +3,9 @@
   'use strict';
 
   const settings = window.CRIAI_CONFIG || {};
+  const englishUI = document.documentElement.lang.toLowerCase().startsWith('en');
+  const menuOpenText = englishUI ? 'Open menu' : 'Abrir menu';
+  const menuCloseText = englishUI ? 'Close menu' : 'Fechar menu';
   const menuButton = document.querySelector('.menu-toggle');
   const menu = document.getElementById('menuPrincipal');
 
@@ -10,12 +13,12 @@
     menuButton.addEventListener('click', () => {
       const expanded = menu.classList.toggle('open');
       menuButton.setAttribute('aria-expanded', String(expanded));
-      menuButton.setAttribute('aria-label', expanded ? 'Fechar menu' : 'Abrir menu');
+      menuButton.setAttribute('aria-label', expanded ? menuCloseText : menuOpenText);
     });
     menu.querySelectorAll('a').forEach(link => link.addEventListener('click', () => {
       menu.classList.remove('open');
       menuButton.setAttribute('aria-expanded', 'false');
-      menuButton.setAttribute('aria-label', 'Abrir menu');
+      menuButton.setAttribute('aria-label', menuOpenText);
     }));
   }
 
@@ -116,9 +119,11 @@
     panel.className = 'consent';
     panel.id = 'privacyConsent';
     panel.setAttribute('role', 'dialog');
-    panel.setAttribute('aria-label', 'Preferências de estatísticas');
+    panel.setAttribute('aria-label', englishUI ? 'Analytics preferences' : 'Preferências de estatísticas');
     panel.setAttribute('aria-modal', 'false');
-    panel.innerHTML = '<div><strong>Suas escolhas de privacidade</strong><p>Estatísticas opcionais só funcionam com sua autorização. O site permanece utilizável sem elas.</p></div><div class="consent-actions"><button class="btn btn-outline" type="button" data-consent="necessary">Somente essenciais</button><button class="btn btn-primary" type="button" data-consent="analytics">Aceitar estatísticas</button></div>';
+    panel.innerHTML = englishUI
+      ? '<div><strong>Your privacy choices</strong><p>Optional analytics only run with your permission. You can use this website without them.</p></div><div class="consent-actions"><button class="btn btn-outline" type="button" data-consent="necessary">Essential only</button><button class="btn btn-primary" type="button" data-consent="analytics">Allow analytics</button></div>'
+      : '<div><strong>Suas escolhas de privacidade</strong><p>Estatísticas opcionais só funcionam com sua autorização. O site permanece utilizável sem elas.</p></div><div class="consent-actions"><button class="btn btn-outline" type="button" data-consent="necessary">Somente essenciais</button><button class="btn btn-primary" type="button" data-consent="analytics">Aceitar estatísticas</button></div>';
     document.body.appendChild(panel);
   }
 
@@ -153,7 +158,7 @@
       if (!/^[A-Za-z0-9_-]{11}$/.test(id)) return;
       const frame = document.createElement('iframe');
       frame.src = 'https://www.youtube-nocookie.com/embed/' + encodeURIComponent(id) + '?autoplay=1&rel=0';
-      frame.title = 'Demonstração da Leadlovers';
+      frame.title = englishUI ? 'Leadlovers product demonstration' : 'Demonstração da Leadlovers';
       frame.loading = 'eager';
       frame.allow = 'accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; web-share';
       frame.allowFullscreen = true;
