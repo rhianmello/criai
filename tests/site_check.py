@@ -170,8 +170,8 @@ if "ga4MeasurementId: ''" not in config:
 ebook = (ROOT / "apostilas.html").read_text(encoding="utf8")
 if "R$ 49,90" not in ebook or 'id="amostra"' not in ebook:
     fail("apostilas: price or free sample section missing")
-if "checkout automático ainda não está disponível" not in ebook:
-    fail("apostilas: manual purchase limitation not disclosed")
+if 'data-ebook-checkout-message' not in ebook or 'assets/ebook-checkout.js' not in ebook:
+    fail("apostilas: checkout readiness indicator and payment script missing")
 if any(tag in ebook for tag in ('href="downloads/', 'href="ebooks/', 'href="apostila-completa.pdf"')):
     fail("apostilas: paid PDF is exposed by a public link")
 if 'id="internacional"' not in ebook or "Escolher idioma e solicitar compra" not in ebook:
@@ -261,8 +261,14 @@ js = (ROOT / "assets/ebook-language.js").read_text(encoding="utf8")
 for rule in ("CRIAI-EBOOK-IA-01-PT", "CRIAI-EBOOK-IA-01-EN", "sessionStorage.setItem", "data-ebook-purchase", "encodeURIComponent"):
     if rule not in js:
         fail(f"ebook: language selection must be transmitted with purchase: {rule}")
-if "R$ 49.90" not in english_product or "automatic checkout is not live" not in english_product:
-    fail("i18n: English product page price or checkout disclaimer missing")
+if "US$ 9.00" not in english_product or 'data-ebook-checkout-message' not in english_product:
+    fail("i18n: English product price or dynamic checkout readiness indicator missing")
+checkout_page = (ROOT / "compra.html").read_text(encoding="utf8")
+delivery_script = (ROOT / "assets/ebook-delivery.js").read_text(encoding="utf8")
+if 'data-download="pt"' not in checkout_page or 'data-download="en"' not in checkout_page:
+    fail("ebook: paid download page needs both PT and EN options")
+if 'request("download", { edition })' not in delivery_script or 'data-download' not in delivery_script:
+    fail("ebook: download must send selected edition after payment verification")
 for file in ("assets/i18n.js", "assets/i18n.css", "assets/en.css"):
     if not (ROOT / file).is_file():
         fail(f"i18n: missing asset {file}")
