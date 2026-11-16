@@ -5,3 +5,7 @@
 .criai-language-switch a:not([aria-current]):hover,.criai-language-switch a:not([aria-current]):focus-visible{background:#e6edf7;color:#19345d}
 @media(max-width:960px){.nav-actions{gap:6px}.criai-language-switch a{min-width:30px;padding:6px 8px}}
 @media(max-width:460px){.criai-language-switch{padding:2px}.criai-language-switch a{min-width:28px;min-height:29px;font-size:11px;padding:5px 7px}}
+
+/* Keep language switch and owner access visible without horizontal overflow on phones. */
+@media(max-width:750px){.nav-actions .owner-entry-label{display:none}.nav-actions .owner-entry-link{height:37px;width:37px;min-height:37px;padding:6px;justify-content:center}.nav-actions .owner-entry-icon{font-size:17px}.criai-language-switch{flex-shrink:0}}
+@media(max-width:400px){.site-header .nav-shell{gap:5px}.site-header .brand{font-size:20px;gap:6px}.site-header .brand-mark{width:33px;height:33px;font-size:18px}.site-header .nav-actions{gap:5px}.criai-language-switch a{min-width:27px;padding:5px 6px}}
