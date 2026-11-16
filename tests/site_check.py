@@ -122,13 +122,17 @@ for slug in ("starter", "essential", "plus"):
         fail(f"review: missing plan {slug} destination")
     if f'PLANO {slug.upper()}' not in home_html:
         fail(f"home: missing plan {slug} label")
-if 'Valores de referência' not in home_html or 'indicação remunerada' not in home_html.lower():
+if 'plano anual' not in home_html or 'indicação remunerada' not in home_html.lower():
     fail("home: missing price and affiliate transparency")
 if home_html.count('class="plan-offer-link"') != 3:
     fail("home: missing separate external purchase links")
-for amount in ("R$ 65", "R$ 149", "R$ 222"):
+for amount in ("R$ 149", "R$ 222"):
     if amount not in home_html or amount not in review_html:
         fail(f"pricing: missing verified amount {amount}")
+if "R$ 65" in home_html or "R$ 65" in review_html:
+    fail("pricing: old starter teaser price still visible")
+if "plan-price-note" in review_html or "*Valores de referência" in home_html:
+    fail("pricing: lengthy price disclaimer still visible")
 privacy_html = (ROOT / "privacidade.html").read_text(encoding="utf8")
 if "permanece desativado" in privacy_html or "G-RG57Q34VB0" not in privacy_html:
     fail("privacy: GA4 consent disclosure is stale or missing")
