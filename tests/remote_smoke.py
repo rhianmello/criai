@@ -90,8 +90,10 @@ with sync_playwright() as p:
                     test(f"Responsive CTA bar {width} {route}",mobile_bar.is_visible()==(width<=750))
                 if route=="/leadlovers.html":
                     demos=page.locator('button[data-video-id]')
-                    test(f"Producer videos {width}",demos.count()==5)
+                    test(f"Producer videos {width}",demos.count()==8)
                     test(f"No video embeds without click {width}",page.locator('.demo-iframe').count()==0)
+                    banners=page.locator('.affiliate-banner-item[data-affiliate="leadlovers"]')
+                    test(f"Affiliate banners {width}",banners.count()==5 and all(banners.nth(i).get_attribute("href")==HOTLINK for i in range(banners.count())))
                     if width in (390,1440):
                         context.route("**/www.youtube-nocookie.com/**",lambda route:route.abort())
                         demos.first.click()

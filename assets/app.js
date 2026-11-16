@@ -100,6 +100,16 @@
     }));
   });
 
+  // Imagens de divulgação externas: manter alternativa acessível se o host não responder.
+  document.querySelectorAll('img[data-affiliate-banner]').forEach(img => {
+    const markUnavailable = () => {
+      const holder = img.closest('.affiliate-banner-item, .affiliate-home-banner-link');
+      if (holder) holder.classList.add('banner-unavailable');
+    };
+    img.addEventListener('error', markUnavailable);
+    if (img.complete && img.naturalWidth === 0) markUnavailable();
+  });
+
   let panel = document.getElementById('privacyConsent');
   if (!panel) {
     panel = document.createElement('div');

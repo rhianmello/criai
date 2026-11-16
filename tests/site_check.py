@@ -134,8 +134,16 @@ if "2.000 contatos" not in home_html or "5.000 contatos" not in home_html:
     fail("pricing: missing starter contact tiers")
 if "equivalente no anual" not in home_html or "equivalente no anual" not in review_html:
     fail("pricing: annual equivalent is not clearly disclosed")
-if "_3Pm1WGiCXw" not in review_html:
-    fail("videos: supplied video reference missing")
+for vid in ("_3Pm1WGiCXw", "xkGU3UeJdQY", "RFRR7fgSteU", "F-P6ZyHhUNM"):
+    if vid not in review_html:
+        fail(f"videos: supplied video reference missing {vid}")
+for banner_id in ("ne9KFgQ", "cfm0IBZ", "MIuzNC3", "pWh1HUh", "LBve6TQ"):
+    if banner_id not in review_html:
+        fail(f"banners: missing supplied creative {banner_id}")
+if "MIuzNC3.png" not in home_html:
+    fail("home: promotional image missing")
+if review_html.count('data-video-id=') != 8:
+    fail("review: expected eight demonstration cards")
 if "plan-price-note" in review_html or "*Valores de referência" in home_html:
     fail("pricing: lengthy price disclaimer still visible")
 privacy_html = (ROOT / "privacidade.html").read_text(encoding="utf8")
