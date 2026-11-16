@@ -30,7 +30,7 @@ for path in PAGES+FILES:
 EBOOK_API="https://ztqtcbzjesrkuaijmylm.supabase.co/functions/v1/criai-ebook-gateway"
 try:
     req=Request(EBOOK_API+"/health",headers={"User-Agent":"CRIAI-QA/1.0","Origin":BASE})
-    with urlopen(req,timeout=20,context=ssl.create_default_context()) as res:
+    with urlopen(req,timeout=40,context=ssl.create_default_context()) as res:
         h=json.loads(res.read())
         test("Recovery email service configured",res.status==200 and h.get("recovery_ready") is True,str(h.get("recovery_ready")))
         test("Paid PT and EN PDFs present",h.get("portuguese_pdf") is True and h.get("english_pdf") is True)
