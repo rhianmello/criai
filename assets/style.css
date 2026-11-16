@@ -265,3 +265,12 @@ a:focus-visible,button:focus-visible{outline:3px solid #2563eb;outline-offset:3p
 .banner-unavailable .affiliate-banner-fallback{display:block}
 @media(max-width:900px){.affiliate-banner-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.affiliate-banner-item--wide{grid-column:span 2}}
 @media(max-width:580px){.affiliate-home-banner{padding:14px 0}.affiliate-banner-grid{grid-template-columns:1fr}.affiliate-banner-item--wide{grid-column:span 1}.affiliate-banner-item{min-height:0;padding:15px}.affiliate-banner-preview{min-height:80px}.affiliate-gallery{padding-top:44px;padding-bottom:45px}}
+
+/* Acesso discreto ao proprietário, visível também no celular e sem competir com o CTA de venda. */
+.owner-entry-link{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:39px;flex:none;padding:8px 12px;border:1px solid #d7e3eb;border-radius:10px;background:#f7fafc;color:#284665;font-size:12px;font-weight:760;white-space:nowrap;transition:background .15s,border-color .15s}
+.owner-entry-link:hover{background:#eaf3f8;border-color:#b8cfda;color:#183a56;text-decoration:none}
+.owner-entry-icon{font-size:13px;line-height:1}
+@media(max-width:1100px){.nav-shell{gap:12px}.nav-links{gap:16px;font-size:12px}.nav-actions{gap:7px}.owner-entry-link{padding:8px 10px}}
+@media(min-width:751px) and (max-width:920px){.nav-links{gap:8px;font-size:11px}.nav-shell .brand{font-size:21px}.nav-shell .brand-mark{height:33px;width:33px}.nav-actions a[data-affiliate="leadlovers"]{font-size:11px;padding:10px}}
+@media(max-width:750px){.owner-entry-link{display:inline-flex;min-height:38px;padding:8px 11px}.nav-actions .owner-entry-link{display:inline-flex}.owner-entry-label{font-size:12px}}
+@media(max-width:360px){.owner-entry-link{gap:4px;padding:7px 8px}.owner-entry-label{font-size:11px}.nav-actions{gap:6px}}

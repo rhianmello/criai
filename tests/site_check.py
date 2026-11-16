@@ -111,6 +111,10 @@ if "<loc>https://criai.xrmovi.com.br/" not in (ROOT / "sitemap.xml").read_text(e
 # da disponibilidade dos links externos de afiliado no navegador.
 home_html = (ROOT / "index.html").read_text(encoding="utf8")
 review_html = (ROOT / "leadlovers.html").read_text(encoding="utf8")
+for page_name, page_html in (("home", home_html), ("review", review_html)):
+    if 'class="owner-entry-link"' not in page_html or 'href="admin/index.html"' not in page_html:
+        fail(f"{page_name}: header must display a direct owner dashboard link")
+
 if 'id="planos"' not in home_html or home_html.find('id="planos"') > home_html.find('id="solucoes"'):
     fail("home: plans not shown before long-form editorial content")
 if home_html.count('class="plan-select-button"') != 3:

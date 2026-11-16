@@ -57,6 +57,12 @@ with sync_playwright() as p:
                 })""")
                 test(f"Browser {width} {route}",resp is not None and resp.status==200 and state["heading"] and state["overflow"]<=3 and not state["analyticTag"],str(state))
                 if route in ("/", "/leadlovers.html"):
+                    owner=page.locator('.site-header a.owner-entry-link')
+                    test(f"Header owner access {width} {route}",
+                         owner.count()==1 and owner.is_visible() and
+                         owner.get_attribute("href")=="admin/index.html" and
+                         owner.bounding_box()["width"]>=65)
+
                     links=page.locator('a[data-affiliate="leadlovers"]')
                     test(f"Direct Hotlink buttons {width} {route}",links.count()>=4 and all(links.nth(i).get_attribute("href")==HOTLINK and "sponsored" in (links.nth(i).get_attribute("rel") or "") for i in range(links.count())))
                     # Mobile uses a fixed offer bar; desktop keeps a header CTA.
