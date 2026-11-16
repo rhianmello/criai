@@ -11,6 +11,24 @@
 - Página comercial: `/apostilas.html` com amostra textual gratuita
 - Contato: suporte@xrmovi.com.br
 
+## Edições de download por idioma (16/11/2026)
+
+O produto base tem duas variantes de **conteúdo integral** e **67 páginas** cada, ambas com 36 etapas (33 lições de execução + 3 etapas do plano de 30 dias), 12 fichas e 10 prompts.
+
+| Variante | SKU fixo no backend | Nome do arquivo privado |
+| --- | --- | --- |
+| Português brasileiro | `CRIAI-EBOOK-IA-01-PT` | `CRIAI_Guia_Negocio_Digital_com_IA_Edicao_1.pdf` |
+| Inglês | `CRIAI-EBOOK-IA-01-EN` | `CRIAI_Create_Your_Digital_Business_with_AI_English_Edition_1.pdf` |
+
+- As duas páginas públicas de venda (`/apostilas.html` e `/en/apostilas.html`) apresentam **Português / English** antes do CTA.
+- `assets/ebook-language.js` acrescenta o SKU e o idioma escolhido ao pedido **manual por e-mail**; essa informação ainda não é um registro seguro de ordem paga.
+- Depois da integração, a preferência selecionada precisa ser **gravada no pedido do servidor** e imutável para aquele pagamento, e o download deve servir unicamente o PDF associado à variante paga.
+- Preço inicial igual para ambas as edições: **R$ 49,90**, sujeito a ajustes comerciais futuros.
+- Arquivos integrais nunca entram no GitHub Pages, em links públicos nem na pasta estática do site. Guardar ambos em storage privado e liberar links temporários após confirmação autenticada do pagamento.
+- Na homologação: selecionar PT e receber PT, selecionar EN e receber EN, recusar SKU adulterado, link expirado, compra pendente, compra cancelada e troca de variante não autorizada.
+- As prévias podem ser públicas, mas devem conter apenas trechos limitados; não usar a mesma URL para o arquivo pago.
+- O site oferece as edições em ambos os idiomas independentemente do idioma da interface e do país de residência.
+
 ## Implementação de produção — arquitetura recomendada
 
 1. Criar ambiente de pagamentos **separado do XRMOVI**, com titular e recebedor corretos do CRIAÍ. Não reutilizar credenciais, dados de clientes ou webhooks do XRMOVI.
