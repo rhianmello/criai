@@ -131,8 +131,8 @@ const recoveryFrom = () => {
   const dedicated = (Deno.env.get("CRIAI_RECOVERY_FROM") || "").trim();
   if (dedicated) return dedicated;
   const shared = (Deno.env.get("XRMOVI_SUPPORT_MAIL_FROM") || "").trim();
-  const match = shared.match(/<([^<>\\s]+@[^<>\\s]+)>\\s*$/) || shared.match(/^([^<>\\s]+@[^<>\\s]+)$/);
-  return match ? `CRIAÍ <${match[1]}>` : "";
+  const match = shared.match(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/);
+  return match ? `CRIAÍ <${match[0]}>` : "";
 };
 function recoveryReady() {
   return Boolean(sql && storage && adminKey && recoveryMailKey().startsWith("re_") && recoveryFrom().includes("@"));
