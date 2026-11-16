@@ -8,7 +8,7 @@
   document.documentElement.lang = en ? "en" : "pt-BR";
   const heading = document.querySelector("[data-heading]");
   const detail = document.querySelector("[data-detail]");
-  const btn = document.querySelector("[data-download]");
+  const buttons = [...document.querySelectorAll("[data-download]")];
   const retry = document.querySelector("[data-check]");
   const back = document.querySelector("[data-back]");
   const support = document.querySelector("[data-support]");
@@ -18,7 +18,7 @@
     approved: "Payment confirmed! Your PDF is ready for a secure download.",
     bad: "The payment has not been approved. Nothing is unlocked.",
     network: "Payment verification is temporarily unavailable. Try again or contact support.",
-    loading: "Verifying payment with the provider…", download: "Download my PDF", downloading: "Preparing secure link…",
+    loading: "Verifying payment with the provider…", downloadPt: "Download in Portuguese", downloadEn: "Download in English", downloading: "Preparing secure link…",
     check: "Check payment again", back: "Return to the guide", help: "Email support"
   } : {
     title: "Sua compra", missing: "Não foi possível recuperar a compra neste navegador. Contate o suporte pelo e-mail informado no pagamento.",
@@ -26,14 +26,14 @@
     approved: "Pagamento confirmado! Sua apostila já pode ser baixada com segurança.",
     bad: "O pagamento não está aprovado. O arquivo continua protegido.",
     network: "Não foi possível confirmar o pagamento agora. Tente novamente ou contate o suporte.",
-    loading: "Conferindo pagamento diretamente com o provedor…", download: "Baixar minha apostila",
+    loading: "Conferindo pagamento diretamente com o provedor…", downloadPt: "Baixar em português", downloadEn: "Baixar em inglês",
     downloading: "Preparando link seguro…", check: "Verificar novamente", back: "Voltar à apostila", help: "Suporte por e-mail"
   };
   const base = "https://ztqtcbzjesrkuaijmylm.supabase.co/functions/v1/criai-ebook-gateway";
   heading.textContent = l.title; retry.textContent = l.check; back.textContent = l.back;
   back.href = en ? "/en/apostilas.html" : "/apostilas.html";
   support.textContent = l.help;
-  btn.textContent = l.download;
+  buttons.forEach(btn => { btn.textContent = btn.dataset.download === "en" ? l.downloadEn : l.downloadPt; });
   let token = "";
   let verified = false;
   let attempts = 0;
@@ -58,24 +58,32 @@
       const hint = p.get("payment_id") || p.get("collection_id") || "";
       const data = await request("status", hint ? { payment_id: hint } : {});
       verified = data.status === "approved" && data.ready === true;
-      btn.hidden = !verified;
+      buttons.forEach(btn => { btn.hidden = !verified; });
       detail.textContent = verified ? l.approved : (["failed","cancelled","refunded","chargeback"].includes(data.status) ? l.bad : l.pending);
       if (!verified && ++attempts <= 12) setTimeout(check, 8000);
     } catch (error) { detail.textContent = String(error?.message || l.network); }
     finally { retry.disabled = false; }
   }
-  btn.addEventListener("click", async (event) => {
+  buttons.forEach(btn => btn.addEventListener("click", async (event) => {
     event.preventDefault();
     if (!verified) return;
-    btn.setAttribute("aria-busy", "true"); btn.textContent = l.downloading;
+    const edition = btn.dataset.download === "en" ? "en" : "pt";
+    btn.disabled = true;
+    btn.setAttribute("aria-busy", "true");
+    btn.textContent = l.downloading;
     try {
-      const data = await request("download");
+      const data = await request("download", { edition });
+      if (data.edition !== edition) throw new Error(l.network);
       const url = new URL(data.download_url);
       if (url.protocol !== "https:" || !url.hostname.endsWith(".supabase.co")) throw new Error(l.network);
       window.location.assign(data.download_url);
     } catch (error) { detail.textContent = String(error?.message || l.network); }
-    finally { btn.removeAttribute("aria-busy"); btn.textContent = l.download; }
-  });
+    finally {
+      btn.disabled = false;
+      btn.removeAttribute("aria-busy");
+      btn.textContent = edition === "en" ? l.downloadEn : l.downloadPt;
+    }
+  }));
   retry.addEventListener("click", check);
   check();
 })();
