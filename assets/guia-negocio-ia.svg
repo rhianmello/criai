@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="1030" viewBox="0 0 800 1030" role="img" aria-labelledby="title desc">
+<title id="title">Capa do livro Crie Seu Negócio Digital com Inteligência Artificial</title>
+<desc id="desc">Capa azul-marinho com título branco e verde, marca CRIAÍ, e subtítulo sobre o método de criação de negócios digitais.</desc>
+<defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#10233d"/><stop offset="1" stop-color="#0b4262"/></linearGradient></defs>
+<rect width="800" height="1030" rx="18" fill="url(#bg)"/>
+<circle cx="820" cy="235" r="360" fill="#285c75" opacity=".45"/>
+<circle cx="760" cy="160" r="230" fill="#357888" opacity=".45"/>
+<rect x="68" y="68" width="136" height="48" rx="15" fill="#079680"/>
+<text x="89" y="102" font-family="Arial,sans-serif" font-size="29" font-weight="800" fill="#fff">CRIAÍ</text>
+<text x="68" y="227" font-family="Arial,sans-serif" font-size="20" letter-spacing="5" fill="#9febd5" font-weight="700">GUIA PRÁTICO • 2026</text>
+<text x="65" y="333" font-family="Arial,sans-serif" font-size="75" fill="#fff" font-weight="900">CRIE SEU</text>
+<text x="65" y="424" font-family="Arial,sans-serif" font-size="75" fill="#fff" font-weight="900">NEGÓCIO</text>
+<text x="65" y="516" font-family="Arial,sans-serif" font-size="75" fill="#fff" font-weight="900">DIGITAL</text>
+<text x="65" y="611" font-family="Arial,sans-serif" font-size="91" fill="#83ecc9" font-weight="900">COM IA</text>
+<text x="70" y="713" font-family="Arial,sans-serif" font-size="27" fill="#d8e7f1">Da ideia à primeira versão publicada.</text>
+<text x="70" y="751" font-family="Arial,sans-serif" font-size="24" fill="#d8e7f1">Método, fichas práticas e prompts originais.</text>
+<rect x="65" y="845" width="675" height="99" rx="16" fill="#008f80"/>
+<text x="91" y="889" font-family="Arial,sans-serif" font-size="23" font-weight="750" fill="#fff">36 ETAPAS • 12 FICHAS • 10 PROMPTS</text>
+<text x="91" y="922" font-family="Arial,sans-serif" font-size="18" fill="#ebfff9">Uma apostila para aprender e executar.</text>
+</svg>
