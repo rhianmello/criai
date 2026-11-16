@@ -273,6 +273,7 @@ with sync_playwright() as p:
         test("English guide mobile does not overflow",
              direct_page.evaluate("document.documentElement.scrollWidth-innerWidth")<=3)
     except Exception as exc:test("English product acceptance",False,repr(exc))
+    test("English sales page recovery link", direct_page.locator('a[href*="recuperar-apostila.html"]').count()>=1)
     direct_context.close()
     recovery_context=browser.new_context(viewport={"width":390,"height":844},locale="en-US")
     recovery_page=recovery_context.new_page()
@@ -287,8 +288,6 @@ with sync_playwright() as p:
              not recovery_page.locator("[data-recovery-download]").is_visible())
         test("Recovery responsive mobile",
              recovery_page.evaluate("document.documentElement.scrollWidth-innerWidth")<=3)
-        test("English sales page recovery link",
-             direct_page.locator('a[href*="recuperar-apostila.html"]').count()>=1)
     except Exception as exc:test("Recovery page browser acceptance",False,repr(exc))
     recovery_context.close()
     browser.close()
