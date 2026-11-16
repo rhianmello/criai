@@ -237,7 +237,7 @@ with sync_playwright() as p:
              direct_page.locator('html[lang="en"]').count()==1,direct_page.url)
         test("English guide offers both full editions",
              "both the English and Brazilian Portuguese editions" in direct_page.locator("main").inner_text() and
-             "R$ 49.90" in direct_page.locator("main").inner_text() and
+             "US$ 9.00" in direct_page.locator("main").inner_text() and
              direct_page.locator('input[name="ebook-language"]').count()==2)
         test("English edition selected by default", direct_page.locator('input[name="ebook-language"][value="en"]').is_checked())
         en_mail=direct_page.locator('a[data-ebook-purchase]')
@@ -246,10 +246,10 @@ with sync_playwright() as p:
         direct_page.locator('input[name="ebook-language"][value="pt"]').check()
         pt_href=en_mail.get_attribute("href") or ""
         test("Switch to Portuguese edition updates purchase","Portuguese" in pt_href and "CRIAI-EBOOK-IA-01-PT" in pt_href)
-        test("Edition preference stored in session",direct_page.evaluate("sessionStorage.getItem('criai_ebook_edition_choice')")=="pt")
+        test("Edition preference stored in session",direct_page.evaluate("sessionStorage.getItem('criai_ebook_edition_choice_en')")=="pt")
         test("English page does not pretend checkout is live",
              direct_page.locator('a[href^="mailto:"]').count()>=1 and
-             "automatic checkout is not live" in direct_page.locator("main").inner_text())
+             "the automated checkout is not active yet" in direct_page.locator("main").inner_text())
         test("English guide mobile does not overflow",
              direct_page.evaluate("document.documentElement.scrollWidth-innerWidth")<=3)
     except Exception as exc:test("English product acceptance",False,repr(exc))
