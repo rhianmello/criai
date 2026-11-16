@@ -254,6 +254,35 @@ for page_name,body in (("PT",ebook),("EN",english_product)):
             fail(f"ebook: {page_name} edition selector missing {needle}")
     if "ebook-language.js" not in body or "ebook-language.css" not in body:
         fail(f"ebook: {page_name} buyer language assets not included")
+# Paid guide recovery: public HTML provides no PDF, and backend requires OTP + paid order.
+recovery_page = ROOT / "recuperar-apostila.html"
+recovery_js = ROOT / "assets/ebook-recovery.js"
+gateway = ROOT / "supabase/functions/criai-ebook-gateway/index.ts"
+if not recovery_page.is_file() or not recovery_js.is_file() or not gateway.is_file():
+    fail("ebook recovery: required HTML, script or backend missing")
+else:
+    recovery_html = recovery_page.read_text(encoding="utf8")
+    recovery_client = recovery_js.read_text(encoding="utf8")
+    recovery_backend = gateway.read_text(encoding="utf8")
+    for needle in ('data-recovery-request', 'data-recovery-verify', 'data-recovery-download',
+                   'name="email"', 'name="code"', 'data-recover-edition="pt"', 'data-recover-edition="en"'):
+        if needle not in recovery_html:
+            fail(f"ebook recovery: missing interface requirement: {needle}")
+    for needle in ('recovery/request', 'recovery/verify', 'recovery/download', 'sessionStorage'):
+        if needle not in recovery_client:
+            fail(f"ebook recovery: missing client mechanism {needle}")
+    for needle in ('CRIAI_RESEND_API_KEY', 'EdgeRuntime.waitUntil', 'code_digest',
+                   'attempts<5', 'verified_at is null', 'token_digest',
+                   'await syncPayment(String(order.mp_payment_id))',
+                   'createSignedUrl(FILES[edition], 120'):
+        if needle not in recovery_backend:
+            fail(f"ebook recovery: missing server security condition {needle}")
+    if 'http' in recovery_html and ('/storage/v1/object/public/' in recovery_html or 'criai-ia-pt-2026.pdf' in recovery_html):
+        fail("ebook recovery: paid PDF must never be linked from public HTML")
+    for page_name, body in (("PT", ebook), ("EN", (ROOT / "en" / "apostilas.html").read_text(encoding="utf8"))):
+        if "recuperar-apostila.html" not in body:
+            fail(f"ebook recovery: {page_name} sales page missing recovery entry")
+
 for asset in ("assets/ebook-language.js", "assets/ebook-language.css"):
     if not (ROOT / asset).is_file():
         fail(f"ebook: missing {asset}")
