@@ -42,7 +42,7 @@ try:
         check('First-time vault created',page.locator('#view-overview').is_visible())
         vault=page.evaluate("localStorage.getItem('criai_fiscal_vault_v1')")
         check('Vault encrypted at rest',vault is not None and '"ciphertext"' in vault and email not in vault)
-        check('No default financial data',page.locator('#kpiGrid').inner_text().count('R$ 0')>=2)
+        check('No default financial data',page.locator('#kpiGrid').inner_text().count('0,00')>=2)
 
         page.locator('[data-open-dialog="transactionDialog"]').first.click()
         page.locator('#txnDate').fill('2026-11-16')
