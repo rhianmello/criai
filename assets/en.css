@@ -1,0 +1,54 @@
+/* English pages: reuse the main CRIAÍ design system. */
+.en-body{background:#fff;color:#152944}
+.en-hero{padding:70px 0;background:linear-gradient(135deg,#f4fbf9,#f6f8ff)}
+.en-hero .kicker{color:#067a65}
+.en-hero h1{max-width:900px;font-size:clamp(2.3rem,5.2vw,4.25rem);line-height:1.09;letter-spacing:-.05em;margin:12px 0 18px}
+.en-hero p{max-width:790px;font-size:clamp(1.02rem,1.6vw,1.15rem);line-height:1.7;color:#53647a;margin:0 0 24px}
+.en-hero-actions{display:flex;gap:12px;flex-wrap:wrap}
+.en-product-picture{max-width:330px;display:block;filter:drop-shadow(0 20px 24px rgba(15,40,60,.15));width:100%}
+.en-two-col{display:grid;grid-template-columns:1.2fr .8fr;align-items:center;gap:44px}
+.en-tile-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:19px;margin-top:30px}
+.en-tile{border:1px solid #e0e8f1;border-radius:18px;padding:27px;background:#fff;box-shadow:0 12px 26px rgba(16,38,62,.035)}
+.en-tile .en-emoji{font-size:2.1rem;display:block;margin-bottom:15px}
+.en-tile h3{font-size:1.11rem;color:#193954;margin:0 0 9px;line-height:1.35}
+.en-tile p{font-size:.93rem;color:#52667a;line-height:1.7;margin:0}
+.en-section{padding:72px 0}
+.en-soft{background:#f7fafd}
+.en-section h2{font-size:clamp(1.85rem,3.5vw,2.75rem);letter-spacing:-.04em;line-height:1.16;margin:0 0 15px;color:#173655}
+.en-section> .container > p,.en-intro{font-size:1rem;color:#52667a;line-height:1.78;max-width:830px}
+.en-section .prose{max-width:880px;margin:auto}
+.en-section .prose h2{font-size:1.45rem;letter-spacing:-.025em;margin-top:35px}
+.en-section .prose h2:first-child{margin-top:0}
+.en-section .prose p,.en-section .prose li{line-height:1.8;color:#455b70;font-size:.97rem}
+.en-points{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:28px 0;padding:0;list-style:none}
+.en-points li{padding:17px 19px;border:1px solid #e4edf5;border-radius:13px;font-weight:650;color:#28475f;background:#fff}
+.en-points li:before{content:'✓ ';color:#079776;font-weight:900}
+.en-pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:19px;margin:30px 0}
+.en-price-card{border:1px solid #d9e4ef;border-radius:19px;padding:25px;background:#fff;display:flex;flex-direction:column;gap:11px}
+.en-price-card.highlight{border:2px solid #168570;background:#f9fffc}
+.en-price-card h3{font-size:1.35rem;margin:0;color:#142f4e}
+.en-price-card .amount{font-weight:900;font-size:2.6rem;line-height:1.14;color:#0d6f62;letter-spacing:-.045em}
+.en-price-card p{font-size:.92rem;color:#52647a;line-height:1.6;margin:0}
+.en-price-card ul{padding-left:20px;color:#445f73;font-size:.91rem;line-height:1.8}
+.en-price-card .btn{margin-top:auto}
+.en-notice{border:1px solid #cbdfea;border-radius:16px;background:#f4faff;padding:20px 24px;color:#27435b;line-height:1.7;margin:25px 0}
+.en-legal{color:#617084;font-size:.84rem;line-height:1.65}
+.en-legal a{color:#14559d;text-decoration:underline}
+.en-cta{background:#122e4e;color:#f6fbff;border-radius:22px;padding:35px;display:flex;gap:30px;align-items:center;justify-content:space-between}
+.en-cta h2{color:#fff;margin:0 0 9px}
+.en-cta p{color:#c9ddec;line-height:1.7;margin:0}
+.en-cta .btn{white-space:nowrap}
+.en-step-list{counter-reset:steps;display:grid;gap:14px;padding:0;list-style:none}
+.en-step-list li{counter-increment:steps;padding:18px 20px 18px 70px;border:1px solid #e3ecf3;background:#fff;border-radius:14px;position:relative;color:#334c60;line-height:1.7}
+.en-step-list li:before{content:counter(steps);position:absolute;left:19px;top:21px;width:32px;height:32px;display:grid;place-items:center;background:#ddf9ef;color:#087b67;font-weight:850;border-radius:10px}
+.en-faq details{border-bottom:1px solid #e1e8f0;padding:19px 0}
+.en-faq summary{font-weight:800;cursor:pointer;color:#21405c}
+.en-faq p{color:#526477;line-height:1.75;margin:14px 0 0}
+.en-footer{padding:35px 0;background:#142e50;color:#edf5fb}
+.en-footer .en-footer-nav{display:flex;gap:17px;flex-wrap:wrap}
+.en-footer a{font-size:.87rem;color:#d6e6f2;text-decoration:underline}
+.en-footer p{font-size:.84rem;color:#afc5d8;max-width:900px;margin:18px 0 0;line-height:1.7}
+.en-tag{display:inline-flex;font-size:.78rem;font-weight:800;padding:8px 12px;background:#e3f8ed;color:#087762;border:1px solid #c7eadb;border-radius:999px;margin-bottom:14px}
+.en-small-link{color:#155ea6;text-decoration:underline;font-weight:700}
+@media(max-width:900px){.en-tile-grid,.en-pricing-grid{grid-template-columns:1fr 1fr}.en-two-col{grid-template-columns:1fr}.en-product-picture{max-width:250px}.en-cta{display:block}.en-cta .btn{margin-top:20px}}
+@media(max-width:640px){.en-tile-grid,.en-pricing-grid,.en-points{grid-template-columns:1fr}.en-hero{padding:45px 0}.en-section{padding:54px 0}.en-cta{padding:24px}.en-pricing-grid{gap:13px}.en-section .prose{max-width:100%}.en-footer .en-footer-nav{gap:13px}}
