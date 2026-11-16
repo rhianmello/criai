@@ -9,3 +9,24 @@
 /* Keep language switch and owner access visible without horizontal overflow on phones. */
 @media(max-width:750px){.nav-actions .owner-entry-label{display:none}.nav-actions .owner-entry-link{height:37px;width:37px;min-height:37px;padding:6px;justify-content:center}.nav-actions .owner-entry-icon{font-size:17px}.criai-language-switch{flex-shrink:0}}
 @media(max-width:400px){.site-header .nav-shell{gap:5px}.site-header .brand{font-size:20px;gap:6px}.site-header .brand-mark{width:33px;height:33px;font-size:18px}.site-header .nav-actions{gap:5px}.criai-language-switch a{min-width:27px;padding:5px 6px}}
+
+/* Tablet nav collapses early enough to protect affiliate CTA and language selector. */
+@media (min-width:751px) and (max-width:1000px){
+ .site-header .nav-links{display:none;position:absolute;top:77px;left:0;right:0;background:white;border-bottom:1px solid #e2eaf1;padding:19px 22px;flex-direction:column;align-items:stretch;gap:14px;box-shadow:0 14px 24px rgba(17,37,79,.08)}
+ .site-header .nav-links.open{display:flex}
+ .site-header .menu-toggle{display:block}
+ .site-header .nav-shell{gap:13px}
+}
+@media(max-width:750px){
+ .site-header .nav-actions .owner-entry-link{width:65px;min-width:65px;min-height:37px;height:37px;padding:5px}
+ .site-header .nav-actions .owner-entry-label{display:none}
+ .site-header .nav-actions .owner-entry-icon{font-size:17px}
+}
+@media(max-width:360px){
+ .site-header .brand{font-size:17px;gap:4px;letter-spacing:-.6px}
+ .site-header .brand-mark{width:28px;height:28px;font-size:16px;border-radius:9px}
+ .site-header .menu-toggle{font-size:18px;padding:5px 8px}
+ .site-header .criai-language-switch a{min-width:24px;padding:5px}
+ .site-header .nav-actions{gap:3px}
+ .site-header .nav-shell{gap:3px}
+}
