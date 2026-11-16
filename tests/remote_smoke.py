@@ -34,6 +34,7 @@ try:
         h=json.loads(res.read())
         test("Recovery email service configured",res.status==200 and h.get("recovery_ready") is True,str(h.get("recovery_ready")))
         test("Paid PT and EN PDFs present",h.get("portuguese_pdf") is True and h.get("english_pdf") is True)
+        test("Mercado Pago Orders API backend published",h.get("gateway")=="checkout-pro-orders",str(h.get("gateway")))
 except Exception as exc:test("Recovery backend health",False,repr(exc))
 try:
     payload=json.dumps({"access_token":"A"*43,"edition":"en"}).encode()
