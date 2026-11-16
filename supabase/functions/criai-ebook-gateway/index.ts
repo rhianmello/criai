@@ -120,17 +120,188 @@ function fixedTimeHexEqual(a: string, b: string) {
   let d = 0; for (let i=0;i<64;i++) d |= a.charCodeAt(i) ^ b.charCodeAt(i);
   return d === 0;
 }
+
+/* Passwordless recovery for existing paid CRIAI purchasers.
+   Email alone is never proof of ownership. Codes are hashed, one-use,
+   short-lived and rate-limited. Only an approved, rechecked payment can download. */
+const recoveryMailKey = () => Deno.env.get("CRIAI_RESEND_API_KEY") || "";
+const recoveryFrom = () => Deno.env.get("CRIAI_RECOVERY_FROM") || "";
+function recoveryReady() {
+  return Boolean(sql && storage && adminKey && recoveryMailKey().startsWith("re_") && recoveryFrom().includes("@"));
+}
+async function recoveryDb(query: string, args: unknown[] = []) {
+  if (!sql) throw new Error("Recovery storage unavailable");
+  return await sql.unsafe(query, args);
+}
+async function recoveryFingerprint(kind: string, value: string) {
+  return digest("criai-recovery-" + kind + ":" + value + ":" + adminKey);
+}
+function recoveryCode() {
+  const r = new Uint32Array(1);
+  crypto.getRandomValues(r);
+  return String(r[0] % 1000000).padStart(6, "0");
+}
+async function sendRecoveryCode(id: string, email: string, code: string, locale: "pt" | "en") {
+  const en = locale === "en";
+  const body = {
+    from: recoveryFrom(), to: [email],
+    subject: en ? "CRIAI: your guide download verification code" : "CRIAÍ: código para recuperar sua apostila",
+    text: en
+      ? "Your CRIAI verification code: " + code + "\nValid for 10 minutes. Enter it at https://criai.xrmovi.com.br/recuperar-apostila.html?lang=en\nIf you did not request it, ignore this message."
+      : "Seu código de verificação CRIAÍ: " + code + "\nVálido por 10 minutos. Digite-o em https://criai.xrmovi.com.br/recuperar-apostila.html\nSe você não pediu este código, ignore esta mensagem."
+  };
+  try {
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer " + recoveryMailKey(),
+        "Content-Type": "application/json",
+        "Idempotency-Key": "criai-ebook-recovery-" + id
+      },
+      body: JSON.stringify(body), signal: AbortSignal.timeout(12000)
+    });
+    if (!response.ok) {
+      console.warn("CRIAI recovery mail provider HTTP " + response.status);
+      return;
+    }
+    await recoveryDb(
+      "update criai_private.ebook_recovery_challenges set sent_at=now() where id=$1::uuid",
+      [id]
+    );
+  } catch (err) {
+    console.warn("CRIAI recovery email could not be sent");
+  }
+}
+async function requestRecovery(req: Request) {
+  if (!recoveryReady()) return json({ error: "Email recovery is not available yet. Contact support." }, 503);
+  let input: any;
+  try { input = await bodyJson(req); } catch { return json({ error: "Invalid request." }, 400); }
+  if (!validEmail(input?.email)) return json({ error: "Enter a valid email address." }, 400);
+  const email = String(input.email).trim().toLowerCase();
+  const locale: "pt" | "en" = input?.locale === "en" ? "en" : "pt";
+  const ip = req.headers.get("cf-connecting-ip") || req.headers.get("x-real-ip") || "unknown";
+  const emailKey = await recoveryFingerprint("email", email);
+  const ipKey = await recoveryFingerprint("ip", ip);
+  // Retain only recent recovery attempts/sessions, not a permanent email-verification history.
+  await recoveryDb("delete from criai_private.ebook_recovery_challenges where created_at < now() - interval '2 days'");
+  await recoveryDb("delete from criai_private.ebook_recovery_sessions where expires_at < now() - interval '2 days'");
+  const rate = (await recoveryDb(
+    "select (select count(*)::int from criai_private.ebook_recovery_challenges where email_key=$1 and created_at>now()-interval '1 hour') as by_email, " +
+    "(select count(*)::int from criai_private.ebook_recovery_challenges where requester_key=$2 and created_at>now()-interval '1 hour') as by_ip, " +
+    "(select count(*)::int from criai_private.ebook_recovery_challenges where email_key=$1 and created_at>now()-interval '60 seconds') as cooldown",
+    [emailKey, ipKey]
+  ))[0];
+  const id = crypto.randomUUID();
+  const publicAnswer = { ok: true, challenge_id: id, expires_in: 600,
+    message: locale === "en"
+      ? "If a paid order matches this email, a verification code will arrive shortly."
+      : "Se existir uma compra aprovada neste e-mail, você receberá um código de verificação." };
+  if (Number(rate?.by_email) >= 3 || Number(rate?.by_ip) >= 15 || Number(rate?.cooldown) >= 1)
+    return json(publicAnswer); // Do not reveal whether an email belongs to a purchaser.
+  const eligible = Boolean((await recoveryDb(
+    "select exists(select 1 from criai_private.ebook_orders " +
+    "where buyer_email=$1 and payment_state='paid' and mp_payment_id is not null) as eligible",
+    [email]
+  ))[0]?.eligible);
+  const code = recoveryCode();
+  const hash = await recoveryFingerprint("otp", id + ":" + code);
+  await recoveryDb(
+    "insert into criai_private.ebook_recovery_challenges " +
+    "(id,email_key,buyer_email,requester_key,code_digest,eligible) " +
+    "values ($1::uuid,$2,$3,$4,$5,$6)",
+    [id, emailKey, eligible ? email : null, ipKey, hash, eligible]
+  );
+  if (eligible) {
+    // Send outside the response path to reduce purchaser-email enumeration by timing.
+    EdgeRuntime.waitUntil(sendRecoveryCode(id, email, code, locale));
+  }
+  return json(publicAnswer);
+}
+async function verifyRecovery(req: Request) {
+  if (!recoveryReady()) return json({ error: "Email recovery unavailable." }, 503);
+  let input: any;
+  try { input = await bodyJson(req); } catch { return json({ error: "Invalid request." }, 400); }
+  const id = safeId(input?.challenge_id);
+  const code = input?.code;
+  if (!id || typeof code !== "string" || !/^[0-9]{6}$/.test(code))
+    return json({ error: "Invalid or expired code." }, 401);
+  // Atomic attempt count: at most 5 guesses; no reuse of a consumed challenge.
+  const rows = await recoveryDb(
+    "update criai_private.ebook_recovery_challenges set attempts=attempts+1 " +
+    "where id=$1::uuid and attempts<5 and eligible=true and sent_at is not null " +
+    "and verified_at is null and expires_at>now() returning buyer_email,code_digest",
+    [id]
+  );
+  const expected = await recoveryFingerprint("otp", id + ":" + code);
+  if (!rows.length || !fixedTimeHexEqual(String(rows[0].code_digest), expected))
+    return json({ error: "Invalid or expired code." }, 401);
+  const consumed = await recoveryDb(
+    "update criai_private.ebook_recovery_challenges set verified_at=now() " +
+    "where id=$1::uuid and verified_at is null and expires_at>now() returning buyer_email",
+    [id]
+  );
+  if (!consumed.length) return json({ error: "Invalid or expired code." }, 401);
+  const accessToken = randomToken();
+  const tokenHash = await recoveryFingerprint("session", accessToken);
+  await recoveryDb(
+    "insert into criai_private.ebook_recovery_sessions (buyer_email,token_digest) values ($1,$2)",
+    [consumed[0].buyer_email, tokenHash]
+  );
+  return json({ access_token: accessToken, expires_in: 3600 });
+}
+async function recoveryDownload(req: Request) {
+  if (!sql || !storage || !adminKey) return json({ error: "Secure download unavailable." }, 503);
+  let input: any;
+  try { input = await bodyJson(req); } catch { return json({ error: "Invalid request." }, 400); }
+  const token = safeToken(input?.access_token);
+  const edition: "pt" | "en" | null = input?.edition === "pt" ? "pt" : input?.edition === "en" ? "en" : null;
+  if (!token || !edition) return json({ error: "Invalid recovery access." }, 401);
+  const tokenHash = await recoveryFingerprint("session", token);
+  const sessions = await recoveryDb(
+    "select buyer_email from criai_private.ebook_recovery_sessions where token_digest=$1 " +
+    "and expires_at>now() and revoked_at is null limit 1",
+    [tokenHash]
+  );
+  if (!sessions.length) return json({ error: "Your access has expired. Request another email code." }, 401);
+  const orders = await recoveryDb(
+    "select mp_payment_id from criai_private.ebook_orders where buyer_email=$1 and " +
+    "payment_state='paid' and mp_payment_id is not null order by paid_at desc nulls last limit 10",
+    [sessions[0].buyer_email]
+  );
+  if (!orders.length) return json({ error: "No approved purchase was found." }, 403);
+  let validPaid = false, providerUnavailable = false;
+  for (const order of orders) {
+    // Never trust a stored status alone. This rechecks refunds and chargebacks.
+    const state = await syncPayment(String(order.mp_payment_id));
+    if (state?.payment_state === "paid") { validPaid = true; break; }
+    if (!state) providerUnavailable = true;
+  }
+  if (!validPaid) return json({
+    error: providerUnavailable ? "Payment verification is temporarily unavailable." : "Purchase is not approved."
+  }, providerUnavailable ? 503 : 403);
+  if (!await fileReady(edition)) return json({ error: "This PDF edition is not available yet." }, 503);
+  const { data, error } = await storage.storage.from(BUCKET)
+    .createSignedUrl(FILES[edition], 120, { download: FILES[edition] });
+  if (error || !data?.signedUrl) return json({ error: "Secure download temporarily unavailable." }, 503);
+  return json({ download_url: data.signedUrl, edition, expires_in: 120 });
+}
+
 Deno.serve(async (req: Request) => {
   const url = new URL(req.url);
-  const route = url.pathname.split("/").filter(Boolean).at(-1) || "";
+  const pathParts = url.pathname.split("/").filter(Boolean);
+  const last = pathParts.at(-1) || "";
+  const route = pathParts.at(-2) === "recovery" ? "recovery/" + last : last;
   if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
   const origin = req.headers.get("origin");
   if (route !== "webhook" && origin && origin !== SITE) return json({ error: "Forbidden origin" }, 403);
   try {
     if (route === "health" && req.method === "GET") {
-      return json({ configured: sellerReady(), portuguese_pdf: await fileReady("pt"), english_pdf: await fileReady("en"),
+      return json({ configured: sellerReady(), recovery_ready: recoveryReady(), portuguese_pdf: await fileReady("pt"), english_pdf: await fileReady("en"),
         currencies: { pt: "BRL", en: "USD" } });
     }
+    if (route === "recovery/request" && req.method === "POST") return await requestRecovery(req);
+    if (route === "recovery/verify" && req.method === "POST") return await verifyRecovery(req);
+    if (route === "recovery/download" && req.method === "POST") return await recoveryDownload(req);
     if (route === "checkout" && req.method === "POST") {
       if (!sellerReady()) return json({ error: "Checkout is not configured yet. Contact support." }, 503);
       const input = await bodyJson(req);
