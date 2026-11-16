@@ -26,6 +26,26 @@ for path in PAGES+FILES:
             if path=="/sitemap.xml":test("Sitemap canonical",b"criai.xrmovi.com.br" in sample)
     except Exception as exc:test("HTTP "+path,False,repr(exc))
 
+# Read-only API checks: ensure uploaded PDFs exist and wrong buyers cannot download.
+EBOOK_API="https://ztqtcbzjesrkuaijmylm.supabase.co/functions/v1/criai-ebook-gateway"
+try:
+    req=Request(EBOOK_API+"/health",headers={"User-Agent":"CRIAI-QA/1.0","Origin":BASE})
+    with urlopen(req,timeout=20,context=ssl.create_default_context()) as res:
+        h=json.loads(res.read())
+        test("Recovery readiness field exposed",res.status==200 and isinstance(h.get("recovery_ready"),bool))
+        test("Paid PT and EN PDFs present",h.get("portuguese_pdf") is True and h.get("english_pdf") is True)
+except Exception as exc:test("Recovery backend health",False,repr(exc))
+try:
+    payload=json.dumps({"access_token":"A"*43,"edition":"en"}).encode()
+    req=Request(EBOOK_API+"/recovery/download",data=payload,
+                headers={"Content-Type":"application/json","Origin":BASE,"User-Agent":"CRIAI-QA/1.0"},method="POST")
+    with urlopen(req,timeout=20,context=ssl.create_default_context()) as res:
+        test("Unauthenticated recovery download blocked",False,"unexpected HTTP "+str(res.status))
+except HTTPError as exc:
+    content=exc.read(1000)
+    test("Unauthenticated recovery download blocked",exc.code==401 and b"download_url" not in content,"HTTP "+str(exc.code))
+except Exception as exc:test("Unauthenticated recovery download blocked",False,repr(exc))
+
 # Network reachability alone does NOT establish the Hotmart owner, cookies or a valid commission.
 class NoRedirect(HTTPRedirectHandler):
     def redirect_request(self,req,fp,code,msg,headers,newurl):return None
@@ -254,6 +274,23 @@ with sync_playwright() as p:
              direct_page.evaluate("document.documentElement.scrollWidth-innerWidth")<=3)
     except Exception as exc:test("English product acceptance",False,repr(exc))
     direct_context.close()
+    recovery_context=browser.new_context(viewport={"width":390,"height":844},locale="en-US")
+    recovery_page=recovery_context.new_page()
+    try:
+        response=recovery_page.goto(BASE+"/recuperar-apostila.html?lang=en",wait_until="domcontentloaded",timeout=35000)
+        recovery_page.wait_for_timeout(1000)
+        test("Bilingual recovery page publicly reachable",
+             response is not None and response.status==200 and
+             recovery_page.locator('html[lang="en"]').count()==1 and
+             recovery_page.locator("#purchase-email").is_visible())
+        test("Recovery download locked before email verification",
+             not recovery_page.locator("[data-recovery-download]").is_visible())
+        test("Recovery responsive mobile",
+             recovery_page.evaluate("document.documentElement.scrollWidth-innerWidth")<=3)
+        test("English sales page recovery link",
+             direct_page.locator('a[href*="recuperar-apostila.html"]').count()>=1)
+    except Exception as exc:test("Recovery page browser acceptance",False,repr(exc))
+    recovery_context.close()
     browser.close()
 
 (OUT/"remote-report.json").write_text(json.dumps({"timestamp_utc":time.strftime("%Y-%m-%dT%H:%M:%SZ",time.gmtime()),"checks":checks,"hotlink_network_only":affiliate,"errors":errors},ensure_ascii=False,indent=2),encoding="utf8")
