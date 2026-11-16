@@ -124,8 +124,16 @@ function fixedTimeHexEqual(a: string, b: string) {
 /* Passwordless recovery for existing paid CRIAI purchasers.
    Email alone is never proof of ownership. Codes are hashed, one-use,
    short-lived and rate-limited. Only an approved, rechecked payment can download. */
-const recoveryMailKey = () => Deno.env.get("CRIAI_RESEND_API_KEY") || "";
-const recoveryFrom = () => Deno.env.get("CRIAI_RECOVERY_FROM") || "";
+// Prefer dedicated CRIAÍ credentials, but safely reuse the already configured
+// Resend sender in this Supabase project when dedicated secrets are absent.
+const recoveryMailKey = () => Deno.env.get("CRIAI_RESEND_API_KEY") || Deno.env.get("XRMOVI_RESEND_API_KEY") || "";
+const recoveryFrom = () => {
+  const dedicated = (Deno.env.get("CRIAI_RECOVERY_FROM") || "").trim();
+  if (dedicated) return dedicated;
+  const shared = (Deno.env.get("XRMOVI_SUPPORT_MAIL_FROM") || "").trim();
+  const match = shared.match(/<([^<>\\s]+@[^<>\\s]+)>\\s*$/) || shared.match(/^([^<>\\s]+@[^<>\\s]+)$/);
+  return match ? `CRIAÍ <${match[1]}>` : "";
+};
 function recoveryReady() {
   return Boolean(sql && storage && adminKey && recoveryMailKey().startsWith("re_") && recoveryFrom().includes("@"));
 }
