@@ -235,9 +235,18 @@ with sync_playwright() as p:
         test("Explicit English URL is honored",
              direct_page.url.startswith(BASE+"/en/apostilas.html") and
              direct_page.locator('html[lang="en"]').count()==1,direct_page.url)
-        test("English guide language disclosed",
-             "Portuguese only" in direct_page.locator("main").inner_text() and
-             "R$ 49.90" in direct_page.locator("main").inner_text())
+        test("English guide offers both full editions",
+             "both the English and Brazilian Portuguese editions" in direct_page.locator("main").inner_text() and
+             "R$ 49.90" in direct_page.locator("main").inner_text() and
+             direct_page.locator('input[name="ebook-language"]').count()==2)
+        test("English edition selected by default", direct_page.locator('input[name="ebook-language"][value="en"]').is_checked())
+        en_mail=direct_page.locator('a[data-ebook-purchase]')
+        english_href=en_mail.get_attribute("href") or ""
+        test("English edition included in email request","English" in english_href and "CRIAI-EBOOK-IA-01-EN" in english_href)
+        direct_page.locator('input[name="ebook-language"][value="pt"]').check()
+        pt_href=en_mail.get_attribute("href") or ""
+        test("Switch to Portuguese edition updates purchase","Portuguese" in pt_href and "CRIAI-EBOOK-IA-01-PT" in pt_href)
+        test("Edition preference stored in session",direct_page.evaluate("sessionStorage.getItem('criai_ebook_edition_choice')")=="pt")
         test("English page does not pretend checkout is live",
              direct_page.locator('a[href^="mailto:"]').count()>=1 and
              "automatic checkout is not live" in direct_page.locator("main").inner_text())
