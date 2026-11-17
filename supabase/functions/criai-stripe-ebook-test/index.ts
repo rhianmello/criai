@@ -89,7 +89,7 @@ Deno.serve(async(req)=>{
       await sql!`insert into criai_private.stripe_ebook_orders
         (id,buyer_email,edition,amount_cents,currency,access_token_sha256)
         values(${id}::uuid,${buyerEmail},${edition},990,'usd',${await sha(accessToken)})`;
-      const success=SITE+"/compra.html?order="+encodeURIComponent(id)+"&lang=en";
+      const success=SITE+"/en/stripe-test-return.html?order="+encodeURIComponent(id);
       const params=form({
         mode:"payment",success_url:success,cancel_url:SITE+"/en/apostilas.html#offer",
         client_reference_id:id,customer_email:buyerEmail,
