@@ -268,9 +268,9 @@ with sync_playwright() as p:
         pt_href=en_mail.get_attribute("href") or ""
         test("Switch to Portuguese edition updates purchase","Portuguese" in pt_href and "CRIAI-EBOOK-IA-01-PT" in pt_href)
         test("Edition preference stored in session",direct_page.evaluate("sessionStorage.getItem('criai_ebook_edition_choice_en')")=="pt")
-        test("English page does not pretend checkout is live",
+        test("English checkout clearly discloses BRL billing",
              direct_page.locator('a[href^="mailto:"]').count()>=1 and
-             "the automated checkout is not active yet" in direct_page.locator("main").inner_text())
+             "The checkout charges R$ 49.90 (BRL)" in direct_page.locator("main").inner_text())
         test("English guide mobile does not overflow",
              direct_page.evaluate("document.documentElement.scrollWidth-innerWidth")<=3)
     except Exception as exc:test("English product acceptance",False,repr(exc))
