@@ -6,7 +6,7 @@ import { createClient } from "npm:@supabase/supabase-js@2.57.4";
 const SITE = "https://criai.xrmovi.com.br";
 const API = "https://api.stripe.com/v1";
 const PRICE = 990;
-const PRICE_ID = "price_1Ucb6jAJHURC7GeRXLK4C4Pl"; // Stripe test product, USD 9.90
+// Inline server-side price avoids Stripe cross-sandbox Price ID mismatches.
 
 const TABLE = "criai_private.stripe_ebook_orders";
 const FILES = {pt:"criai-ia-pt-2026.pdf",en:"criai-ia-en-2026.pdf"} as const;
@@ -95,7 +95,9 @@ Deno.serve(async(req)=>{
       const params=form({
         mode:"payment",success_url:success,cancel_url:SITE+"/en/apostilas.html#offer",
         client_reference_id:id,customer_email:buyerEmail,
-        "line_items[0][price]":PRICE_ID,
+        "line_items[0][price_data][currency]":"usd",
+        "line_items[0][price_data][unit_amount]":String(PRICE),
+        "line_items[0][price_data][product_data][name]":"CRIAÍ — Build Your Digital Business with AI (PDF)",
         "line_items[0][quantity]":"1",
         "metadata[criai_order_id]":id,
         "locale":"en"
