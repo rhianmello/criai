@@ -181,6 +181,16 @@ if "cartões internacionais" not in ebook.lower() or "R$ 49,90" not in ebook:
 if "https://criai.xrmovi.com.br/apostilas.html" not in (ROOT / "sitemap.xml").read_text(encoding="utf8"):
     fail("sitemap: editorial product not indexed")
 
+# English home must make the paid original guide visible before the hero;
+# do not claim a fixed USD charge when the payment gateway charges in BRL.
+en_home = (ROOT / "en" / "index.html").read_text(encoding="utf8")
+if 'class="en-guide-promo"' not in en_home or en_home.find('class="en-guide-promo"') > en_home.find('class="en-hero"'):
+    fail("i18n: English home missing prominent guide banner before hero")
+if 'href="apostilas.html#offer"' not in en_home or "Buy the guide" not in en_home:
+    fail("i18n: English home missing direct guide purchase entry")
+if "US$ 9.00 (USD)" in en_home or "R$ 49.90 (BRL)" not in en_home:
+    fail("i18n: English home must disclose actual BRL checkout price")
+
 # Bilingual delivery: English pages must be real documents, not external translations.
 from xml.etree import ElementTree as ET
 english_filenames = [
