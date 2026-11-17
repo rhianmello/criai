@@ -52,3 +52,19 @@
 .en-small-link{color:#155ea6;text-decoration:underline;font-weight:700}
 @media(max-width:900px){.en-tile-grid,.en-pricing-grid{grid-template-columns:1fr 1fr}.en-two-col{grid-template-columns:1fr}.en-product-picture{max-width:250px}.en-cta{display:block}.en-cta .btn{margin-top:20px}}
 @media(max-width:640px){.en-tile-grid,.en-pricing-grid,.en-points{grid-template-columns:1fr}.en-hero{padding:45px 0}.en-section{padding:54px 0}.en-cta{padding:24px}.en-pricing-grid{gap:13px}.en-section .prose{max-width:100%}.en-footer .en-footer-nav{gap:13px}}
+
+
+/* Keep the original CRIAÍ guide visible immediately below the English menu. */
+.en-guide-promo{background:#e9f8f2;border-bottom:1px solid #ccece0}
+.en-guide-promo-inner{display:flex;align-items:center;justify-content:space-between;gap:18px;padding-top:14px;padding-bottom:14px}
+.en-guide-promo-copy{display:flex;align-items:center;gap:14px;min-width:0}
+.en-guide-promo-icon{display:grid;place-items:center;width:48px;height:48px;flex:0 0 48px;border:1px solid #c8e4d9;border-radius:12px;background:#fff;font-size:25px}
+.en-guide-promo-copy strong{display:block;color:#102d41;font-size:1rem;line-height:1.35}
+.en-guide-promo-copy small{display:block;color:#3f6572;font-size:.83rem;line-height:1.45;margin-top:3px}
+.en-guide-promo-actions{display:flex;align-items:center;gap:9px;flex-shrink:0}
+.en-guide-promo-actions a{display:inline-flex;align-items:center;justify-content:center;min-height:42px;border-radius:11px;padding:9px 16px;font-size:.9rem;font-weight:800;text-align:center}
+.en-guide-promo-detail{color:#065e58;border:1px solid #98d3c5;background:#fff}
+.en-guide-promo-buy{background:#067565;color:#fff}
+.en-guide-promo-actions a:focus-visible{outline:3px solid #3ca6dc;outline-offset:2px}
+@media(max-width:780px){.en-guide-promo-inner{align-items:stretch;flex-direction:column}.en-guide-promo-actions{flex-wrap:wrap}.en-guide-promo-actions a{flex:1}}
+@media(max-width:420px){.en-guide-promo-copy strong{font-size:.92rem}.en-guide-promo-copy small{font-size:.78rem}.en-guide-promo-actions a{padding:8px 10px;font-size:.85rem}}
