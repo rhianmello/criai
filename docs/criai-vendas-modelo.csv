@@ -1,0 +1,1 @@
+sale_date,provider,order_id,source,product,edition,country,currency,gross_amount,exchange_rate_reference,gross_brl,provider_fee_brl,refund_brl,net_brl,payment_status,fiscal_document_type,fiscal_document_number,fiscal_issue_status,notes
