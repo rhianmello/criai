@@ -295,7 +295,7 @@ js = (ROOT / "assets/ebook-language.js").read_text(encoding="utf8")
 for rule in ("CRIAI-EBOOK-IA-01-PT", "CRIAI-EBOOK-IA-01-EN", "sessionStorage.setItem", "data-ebook-purchase", "encodeURIComponent"):
     if rule not in js:
         fail(f"ebook: language selection must be transmitted with purchase: {rule}")
-if "US$ 9.00" not in english_product or 'data-ebook-checkout-message' not in english_product:
+if "R$ 49.90" not in english_product or '"priceCurrency":"BRL"' not in english_product or 'data-ebook-checkout-message' not in english_product:
     fail("i18n: English product price or dynamic checkout readiness indicator missing")
 checkout_page = (ROOT / "compra.html").read_text(encoding="utf8")
 delivery_script = (ROOT / "assets/ebook-delivery.js").read_text(encoding="utf8")
