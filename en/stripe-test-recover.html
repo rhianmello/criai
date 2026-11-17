@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>CRIAÍ — Recover Stripe test guide</title>
+<link rel="stylesheet" href="../assets/style.css"><link rel="stylesheet" href="../assets/en.css">
+<style>
+body{background:#f5f9fc;color:#182d47;font:16px/1.6 system-ui,sans-serif}
+.test-wrap{width:min(640px,calc(100% - 30px));margin:45px auto;padding:28px;border:1px solid #dce5ee;background:#fff;border-radius:16px}
+.test-pill{display:inline-block;background:#dff5e9;color:#006a53;padding:5px 12px;border-radius:30px;font:700 12px system-ui}
+.test-wrap h1{font-size:clamp(1.7rem,5vw,2.4rem);margin:16px 0}
+.test-wrap input{padding:12px;border:1px solid #aab7c6;border-radius:8px;font:inherit;width:100%;max-width:450px;margin:8px 0 15px}
+.test-wrap label{font-weight:700}.test-wrap button{background:#087663;color:white;border:0;border-radius:9px;padding:12px 18px;font-weight:800;cursor:pointer;margin:8px 8px 8px 0}
+.test-wrap button:disabled{opacity:.5;cursor:wait}.test-wrap [hidden]{display:none!important}
+.test-wrap a{color:#067965}.test-wrap [role=status]{min-height:24px;color:#384f65}
+</style>
+</head>
+<body><main class="test-wrap">
+<span class="test-pill">TEST MODE — NO REAL PAYMENT</span>
+<h1>Recover your CRIAÍ guide</h1>
+<p>Enter the email used for your Stripe test purchase. We'll send a six-digit code so you can download either PDF edition again.</p>
+<form id="request">
+  <label for="email">Purchase email</label>
+  <div><input type="email" id="email" autocomplete="email" required maxlength="254" placeholder="buyer@example.com"></div>
+  <button type="submit">Email my verification code</button>
+</form>
+<form id="verify" hidden>
+  <label for="otp">Six-digit code (valid for 10 minutes)</label>
+  <div><input type="text" id="otp" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" minlength="6" maxlength="6" required></div>
+  <button type="submit">Verify and unlock</button>
+</form>
+<div id="downloads" hidden>
+<p>Email verified. Choose the full edition to download:</p>
+<button type="button" data-edition="en">Download English PDF</button>
+<button type="button" data-edition="pt">Download Portuguese PDF</button>
+</div>
+<p id="message" role="status" aria-live="polite"></p>
+<p><a href="/en/stripe-test.html">Return to Stripe test purchase</a></p>
+<script>
+(() => {
+ "use strict";
+ const BASE="https://ztqtcbzjesrkuaijmylm.supabase.co/functions/v1/criai-stripe-ebook-test";
+ const req=document.querySelector("#request"),ver=document.querySelector("#verify");
+ const files=document.querySelector("#downloads"),msg=document.querySelector("#message");
+ const email=document.querySelector("#email"),otp=document.querySelector("#otp");
+ let challenge="",access="";
+ async function post(route,payload) {
+  const response=await fetch(BASE+"/recovery/"+route,{
+    method:"POST",cache:"no-store",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify(payload)
+  });
+  const data=await response.json().catch(()=>({}));
+  if(!response.ok)throw Error(data.error||"Unable to complete the request");
+  return data;
+ }
+ async function submitWhile(form,job){
+  const button=form.querySelector("button[type=submit]");
+  button.disabled=true;
+  try{await job();}catch(e){msg.textContent=e.message||"Please retry";}finally{button.disabled=false;}
+ }
+ req.addEventListener("submit",e=>{
+  e.preventDefault(); if(!email.checkValidity()){email.reportValidity();return;}
+  submitWhile(req,async()=>{
+   msg.textContent="Requesting verification code…";
+   const data=await post("request",{email:email.value.trim(),locale:"en"});
+   if(!/^[a-f0-9-]{36}$/i.test(data.challenge_id||""))throw Error("Unexpected response");
+   challenge=data.challenge_id;req.hidden=true;ver.hidden=false;msg.textContent="If this email has a paid Stripe test purchase, a code was sent. Check your inbox and spam folder.";otp.focus();
+  });
+ });
+ ver.addEventListener("submit",e=>{
+  e.preventDefault();if(!otp.checkValidity()||!challenge)return;
+  submitWhile(ver,async()=>{
+   msg.textContent="Verifying your code…";
+   const data=await post("verify",{challenge_id:challenge,code:otp.value.trim()});
+   if(!/^[a-zA-Z0-9_-]{40,80}$/.test(data.access_token||""))throw Error("Invalid access response");
+   access=data.access_token;ver.hidden=true;files.hidden=false;msg.textContent="Verification succeeded. Your test PDFs are ready.";
+  });
+ });
+ files.querySelectorAll("[data-edition]").forEach(button=>button.addEventListener("click",async()=>{
+  if(!access)return;button.disabled=true;
+  try{
+   msg.textContent="Checking Stripe payment and generating a secure link…";
+   const data=await post("download",{access_token:access,edition:button.dataset.edition});
+   const url=new URL(data.download_url);
+   if(url.protocol!=="https:"||!url.hostname.endsWith(".supabase.co"))throw Error("Unexpected download address");
+   msg.textContent="Ready. Opening your PDF…";location.assign(url.href);
+  }catch(e){msg.textContent=e.message||"Download unavailable";}finally{button.disabled=false;}
+ }));
+})();
+</script></main></body></html>
