@@ -258,7 +258,7 @@ with sync_playwright() as p:
              direct_page.locator('html[lang="en"]').count()==1,direct_page.url)
         test("English guide offers both full editions",
              "both the English and Brazilian Portuguese editions" in direct_page.locator("main").inner_text() and
-             "US$ 9.00" in direct_page.locator("main").inner_text() and
+             "R$ 49.90" in direct_page.locator("main").inner_text() and
              direct_page.locator('input[name="ebook-language"]').count()==2)
         test("English edition selected by default", direct_page.locator('input[name="ebook-language"][value="en"]').is_checked())
         en_mail=direct_page.locator('a[data-ebook-purchase]')
