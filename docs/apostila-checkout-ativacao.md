@@ -4,7 +4,7 @@
 
 ## Componentes implantados
 
-- Páginas: `apostilas.html` (R$ 49,90 / BRL), `en/apostilas.html` (US$ 9,00 / USD), `compra.html` (retorno do pagamento).
+- Páginas: `apostilas.html` (R$ 49,90 / BRL), `en/apostilas.html` (R$ 49,90 / BRL, página em inglês), `compra.html` (retorno do pagamento).
 - Scripts: `assets/ebook-checkout.js` e `assets/ebook-delivery.js`.
 - Backend: Supabase Edge Function `criai-ebook-gateway`, em `https://ztqtcbzjesrkuaijmylm.supabase.co/functions/v1/criai-ebook-gateway`.
 - Banco: `criai_private.ebook_orders`, com RLS + FORCE RLS e sem permissões para visitantes.
@@ -37,7 +37,7 @@ Configure as notificações de **pagamento/payment** para:
 
 O endereço também é enviado na `notification_url` da preferência de Checkout Pro.
 
-**Moeda:** português cria preferência em BRL 49,90; inglês tenta USD 9,00 **sem conversão silenciosa**. Confirmar na integração Mercado Pago se a conta brasileira permite Checkout Pro em USD. Se o provedor recusar, a venda EN é bloqueada sem cobrança. Não exibir preço USD e cobrar BRL sem informar valor final e consentimento.
+**Moeda — atualização da homologação de 16/11/2026:** o Mercado Pago Checkout Pro via Orders na conta brasileira opera em BRL. Tanto PT quanto EN são anunciados e cobrados por R$ 49,90. Na página EN a conversão é informada como responsabilidade do banco emissor, sem prometer preço fixo em USD. Pedidos de teste criados anteriormente como USD 9,00 não devem ser reclassificados nem liberar arquivos sem nova verificação do provedor. Para cobrar exatamente US$ 9,00 no futuro será necessário um processador com suporte comprovado a USD para o estabelecimento. A API foi migrada de Preferences para Orders.
 
 ## Fluxo de segurança
 
