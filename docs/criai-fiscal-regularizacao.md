@@ -9,6 +9,9 @@
 - Stripe test account acessível via ChatGPT: XRmovi, modo teste. API `GetTaxSettings` e `GetTaxRegistrations` respondeu “Stripe Tax isn't yet supported for your country”; não foi ativado cálculo automático de imposto.
 - Venda em países estrangeiros pode gerar obrigações locais de VAT/GST/sales tax mesmo para operação a partir do Brasil. A avaliação dependerá dos países atendidos, tipo de cliente, estabelecimento e limite/regra aplicável.
 - **Não aplicar uma alíquota arbitrária nem cadastrar uma suposta isenção de todas as receitas.**
+- [Stripe, requisitos para contas brasileiras](https://support.stripe.com/questions/brazil-specific-information-to-open-a-stripe-account?locale=pt-BR): conta tipo pessoa física pode operar com CPF (CNPJ opcional nesse formulário), mas os repasses exigem conta bancária brasileira em BRL vinculada ao mesmo CPF. A possibilidade técnica de abrir conta com CPF **não dispensa regularização tributária**.
+- O Stripe Tax retornou erro de indisponibilidade para o país da conta em teste. Não oferecer 'cálculo automático de VAT/GST' ao comprador nem simular tributação.
+
 
 ## Base oficial brasileira
 1. [STF, Súmula Vinculante 57](https://portal.stf.jus.br/jurisprudencia/sumariosumulas.asp?base=26&sumula=5966): a imunidade tributária do art. 150, VI, “d” alcança o livro eletrônico. A imunidade objetiva de livros não implica dispensa de todos os tributos ou deveres de documentação fiscal.
