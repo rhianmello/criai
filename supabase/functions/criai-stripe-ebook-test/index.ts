@@ -70,8 +70,119 @@ async function hmac(secret:string,data:string){
   return Array.from(new Uint8Array(await crypto.subtle.sign("HMAC",key,new TextEncoder().encode(data)))).map(x=>x.toString(16).padStart(2,"0")).join("");
 }
 function ctEqual(a:string,b:string){if(!/^[0-9a-f]{64}$/.test(a)||!/^[0-9a-f]{64}$/.test(b))return false;let x=0;for(let i=0;i<a.length;i++)x|=a.charCodeAt(i)^b.charCodeAt(i);return x===0;}
+
+/* Separate passwordless recovery for Stripe test orders.
+   Does not grant access to any Mercado Pago order or public PDF.
+   Challenges are 10 min, five attempts, sessions 1 hour and payment rechecked. */
+const emailKey=Deno.env.get("CRIAI_RESEND_API_KEY")||Deno.env.get("XRMOVI_RESEND_API_KEY")||"";
+const emailSender=(()=>{
+  const preferred=(Deno.env.get("CRIAI_RECOVERY_FROM")||"").trim();
+  if(preferred.includes("@"))return preferred;
+  const shared=(Deno.env.get("XRMOVI_SUPPORT_MAIL_FROM")||"").trim();
+  const match=shared.match(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/);
+  return match?"CRIAÍ <"+match[0]+">":"";
+})();
+const recoveryReady=()=>ready()&&emailKey.startsWith("re_")&&emailSender.includes("@")&&Boolean(SERVICE_KEY);
+async function fingerprint(kind:string,value:string){return sha("criai-stripe-test-recovery:"+kind+":"+SERVICE_KEY+":"+value);}
+function randomCode(){
+  const n=new Uint32Array(1);crypto.getRandomValues(n);
+  return String(n[0]%1000000).padStart(6,"0");
+}
+async function mailCode(id:string,email:string,code:string){
+  const message={
+    from:emailSender,to:[email],
+    subject:"CRIAÍ TEST: verify your guide purchase (no real payment)",
+    text:"Your CRIAÍ test purchase verification code is: "+code+
+      "\nValid for 10 minutes. Enter it at https://criai.xrmovi.com.br/en/stripe-test-recover.html"+
+      "\nThis is test mode. No real money was charged. If you did not request this code, ignore this message."
+  };
+  try{
+    const response=await fetch("https://api.resend.com/emails",{method:"POST",headers:{
+      "Authorization":"Bearer "+emailKey,"Content-Type":"application/json",
+      "Idempotency-Key":"criai-stripe-test-recovery-"+id
+    },body:JSON.stringify(message),signal:AbortSignal.timeout(12000)});
+    if(response.ok) await sql!`update criai_private.stripe_ebook_recovery_challenges set sent_at=now() where id=${id}::uuid`;
+    else console.warn("CRIAI test recovery email provider error",response.status);
+  }catch(_){console.warn("CRIAI test recovery email unavailable");}
+}
+async function requestTestRecovery(req:Request){
+  if(!recoveryReady())return respond({error:"Test email recovery is unavailable"},503);
+  const input=await req.json().catch(()=>null);
+  if(!validEmail(input?.email))return respond({error:"Enter a valid email"},400);
+  const email=String(input.email).trim().toLowerCase();
+  const ip=req.headers.get("cf-connecting-ip")||"unknown";
+  const emailHash=await fingerprint("email",email),ipHash=await fingerprint("ip",ip);
+  await sql!`delete from criai_private.stripe_ebook_recovery_challenges where created_at<now()-interval '2 days'`;
+  await sql!`delete from criai_private.stripe_ebook_recovery_sessions where expires_at<now()-interval '2 days'`;
+  const limits=await sql!`select
+    (select count(*)::int from criai_private.stripe_ebook_recovery_challenges where email_key=${emailHash} and created_at>now()-interval '1 hour') as by_email,
+    (select count(*)::int from criai_private.stripe_ebook_recovery_challenges where requester_key=${ipHash} and created_at>now()-interval '1 hour') as by_ip,
+    (select count(*)::int from criai_private.stripe_ebook_recovery_challenges where email_key=${emailHash} and created_at>now()-interval '60 seconds') as cooldown`;
+  const id=crypto.randomUUID(),answer={ok:true,challenge_id:id,expires_in:600,message:"If this email has a paid test order, a code will be sent."};
+  if(Number(limits[0]?.by_email)>=3||Number(limits[0]?.by_ip)>=15||Number(limits[0]?.cooldown)>=1)return respond(answer);
+  const matches=await sql!`select exists(select 1 from criai_private.stripe_ebook_orders where buyer_email=${email}
+    and status='paid' and stripe_session_id is not null) as eligible`;
+  const eligible=Boolean(matches[0]?.eligible),code=randomCode();
+  const digest=await fingerprint("otp",id+":"+code);
+  await sql!`insert into criai_private.stripe_ebook_recovery_challenges
+    (id,email_key,requester_key,buyer_email,code_digest,eligible)
+    values (${id}::uuid,${emailHash},${ipHash},${eligible?email:null},${digest},${eligible})`;
+  if(eligible)EdgeRuntime.waitUntil(mailCode(id,email,code));
+  return respond(answer);
+}
+async function verifyTestRecovery(req:Request){
+  if(!recoveryReady())return respond({error:"Test recovery unavailable"},503);
+  const input=await req.json().catch(()=>null);
+  const id=input?.challenge_id,otp=input?.code;
+  if(!safeId(id)||typeof otp!=="string"||!/^\d{6}$/.test(otp))
+    return respond({error:"Invalid or expired code"},401);
+  const rows=await sql!`update criai_private.stripe_ebook_recovery_challenges
+    set attempts=attempts+1 where id=${id}::uuid and eligible=true and attempts<5
+    and sent_at is not null and verified_at is null and expires_at>now()
+    returning buyer_email,code_digest`;
+  const expected=await fingerprint("otp",id+":"+otp);
+  if(!rows.length||!ctEqual(String(rows[0].code_digest),expected))
+    return respond({error:"Invalid or expired code"},401);
+  const changed=await sql!`update criai_private.stripe_ebook_recovery_challenges
+    set verified_at=now() where id=${id}::uuid and verified_at is null and expires_at>now()
+    returning buyer_email`;
+  if(!changed.length)return respond({error:"Already used or expired"},401);
+  const accessToken=token(),digest=await fingerprint("session",accessToken);
+  await sql!`insert into criai_private.stripe_ebook_recovery_sessions(buyer_email,token_digest)
+    values (${changed[0].buyer_email},${digest})`;
+  return respond({access_token:accessToken,expires_in:3600,test_mode:true});
+}
+async function downloadRecoveredTest(req:Request){
+  if(!recoveryReady())return respond({error:"Test recovery unavailable"},503);
+  const input=await req.json().catch(()=>null);
+  const access=input?.access_token,edition=input?.edition;
+  if(!safeToken(access)||!["en","pt"].includes(edition))return respond({error:"Invalid recovery access"},401);
+  const digest=await fingerprint("session",access);
+  const sessions=await sql!`select buyer_email from criai_private.stripe_ebook_recovery_sessions
+    where token_digest=${digest} and revoked_at is null and expires_at>now() limit 1`;
+  if(!sessions.length)return respond({error:"Recovery session expired"},401);
+  const orders=await sql!`select id,buyer_email,edition,stripe_session_id,amount_cents,currency,status
+    from criai_private.stripe_ebook_orders where buyer_email=${sessions[0].buyer_email}
+    and status='paid' and stripe_session_id is not null order by paid_at desc nulls last limit 10`;
+  if(!orders.length)return respond({error:"No approved Stripe test purchase"},403);
+  let valid=false,temporaryFailure=false;
+  for(const order of orders){
+    try{
+      const status=await syncOrder(order);
+      if(status?.status==="paid"){valid=true;break;}
+    }catch(_){temporaryFailure=true;}
+  }
+  if(!valid)return respond({error:temporaryFailure?"Stripe test verification unavailable":"Purchase was not approved"},
+    temporaryFailure?503:403);
+  const file=FILES[edition as "en"|"pt"];
+  const {data,error}=await store!.storage.from("criai-paid-ebooks").createSignedUrl(file,120,{download:file});
+  if(error||!data?.signedUrl)return respond({error:"Secure PDF unavailable"},503);
+  return respond({download_url:data.signedUrl,edition,expires_in:120,test_mode:true});
+}
+
 Deno.serve(async(req)=>{
-  const url=new URL(req.url),route=url.pathname.split("/").filter(Boolean).at(-1);
+  const url=new URL(req.url),parts=url.pathname.split("/").filter(Boolean),last=parts.at(-1);
+  const route=parts.at(-2)==="recovery"?"recovery/"+last:last;
   if(req.method==="OPTIONS")return new Response(null,{status:204,headers});
   if(route!=="webhook" && req.headers.get("origin") && req.headers.get("origin")!==SITE)return respond({error:"Forbidden origin"},403);
   if(route==="health"&&req.method==="GET"){
@@ -83,9 +194,12 @@ Deno.serve(async(req)=>{
           response.data.every((session:any)=>session.livemode===false);
       }catch(_){api_connected=false;}
     }
-    return respond({configured:ready(),api_connected,test_mode:true,currency:"usd",amount_cents:PRICE});
+    return respond({configured:ready(),api_connected,recovery_ready:recoveryReady(),test_mode:true,currency:"usd",amount_cents:PRICE});
   }
   try{
+    if(route==="recovery/request"&&req.method==="POST")return await requestTestRecovery(req);
+    if(route==="recovery/verify"&&req.method==="POST")return await verifyTestRecovery(req);
+    if(route==="recovery/download"&&req.method==="POST")return await downloadRecoveredTest(req);
     if(route==="checkout"&&req.method==="POST"){
       if(!ready())return respond({error:"International checkout is not ready. No charge was made."},503);
       const input=await req.json();
