@@ -74,7 +74,17 @@ Deno.serve(async(req)=>{
   const url=new URL(req.url),route=url.pathname.split("/").filter(Boolean).at(-1);
   if(req.method==="OPTIONS")return new Response(null,{status:204,headers});
   if(route!=="webhook" && req.headers.get("origin") && req.headers.get("origin")!==SITE)return respond({error:"Forbidden origin"},403);
-  if(route==="health"&&req.method==="GET")return respond({configured:ready(),test_mode:true,currency:"usd",amount_cents:PRICE});
+  if(route==="health"&&req.method==="GET"){
+    let api_connected=false;
+    if(ready()){
+      try {
+        const response=await stripeGet("/checkout/sessions?limit=1");
+        api_connected=response?.object==="list" && Array.isArray(response?.data) &&
+          response.data.every((session:any)=>session.livemode===false);
+      }catch(_){api_connected=false;}
+    }
+    return respond({configured:ready(),api_connected,test_mode:true,currency:"usd",amount_cents:PRICE});
+  }
   try{
     if(route==="checkout"&&req.method==="POST"){
       if(!ready())return respond({error:"International checkout is not ready. No charge was made."},503);
