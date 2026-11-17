@@ -8,9 +8,40 @@ const SITE = "https://criai.xrmovi.com.br";
 const API = "https://api.mercadopago.com";
 const BUCKET = "criai-paid-ebooks";
 const FILES = { pt: "criai-ia-pt-2026.pdf", en: "criai-ia-en-2026.pdf" } as const;
-// Mercado Pago Brazil Checkout Pro settles in BRL for both language pages.
-// Never advertise a fixed USD price unless a USD-capable processor is integrated.
-const PRICES = { pt: { amount: 49.90, currency: "BRL" }, en: { amount: 49.90, currency: "BRL" } } as const;
+// Brazil-based Mercado Pago settles in BRL. English pages target a USD-equivalent
+// product price based on the latest published PTAX sell rate, not a USD charge.
+const PRICES = { pt: { amount: 49.90, currency: "BRL" } } as const;
+const EN_USD_TARGET = 9.90;
+type FxQuote = { amountBRL: number; ptaxSell: number; quotedAt: string };
+let fxCache: { at: number; value: FxQuote } | null = null;
+async function englishPtaxQuote(): Promise<FxQuote> {
+  if (fxCache && Date.now() - fxCache.at < 60 * 60 * 1000) return fxCache.value;
+  const today = new Date();
+  const since = new Date(today.getTime() - 14 * 86400000);
+  const dateParam = (d: Date) => [String(d.getUTCMonth()+1).padStart(2,"0"),String(d.getUTCDate()).padStart(2,"0"),d.getUTCFullYear()].join("-");
+  const url = "https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoDolarPeriodo(dataInicial=@dataInicial,dataFinalCotacao=@dataFinalCotacao)" +
+    "?@dataInicial='" + dateParam(since) + "'&@dataFinalCotacao='" + dateParam(today) + "'&$format=json&$top=500";
+  const response = await fetch(url, { headers: { Accept: "application/json" }, signal: AbortSignal.timeout(7000) });
+  if (!response.ok) throw new Error("PTAX quote temporarily unavailable");
+  const payload = await response.json();
+  const rows = Array.isArray(payload?.value) ? payload.value : [];
+  const available = rows.filter((row: any) => Number.isFinite(Number(row.cotacaoVenda)) &&
+    Number(row.cotacaoVenda) >= 1 && Number(row.cotacaoVenda) <= 20 &&
+    /^\d{4}-\d{2}-\d{2}/.test(String(row.dataHoraCotacao || "")));
+  available.sort((a: any,b: any) => String(a.dataHoraCotacao).localeCompare(String(b.dataHoraCotacao)));
+  const latest = available.at(-1);
+  if (!latest) throw new Error("No current PTAX USD sell rate available");
+  const quotedAt = String(latest.dataHoraCotacao).slice(0,10);
+  const ts = Date.parse(quotedAt + "T00:00:00Z");
+  if (!Number.isFinite(ts) || ts > Date.now() + 86400000 || Date.now() - ts > 15*86400000)
+    throw new Error("PTAX quote out of date");
+  const ptaxSell = Number(latest.cotacaoVenda);
+  const result = { amountBRL: Math.round(EN_USD_TARGET * ptaxSell * 100) / 100,
+    ptaxSell, quotedAt };
+  fxCache = { at: Date.now(), value: result };
+  return result;
+}
+
 const envToken = () => Deno.env.get("CRIAI_MP_ACCESS_TOKEN") || "";
 const envWebhookSecret = () => Deno.env.get("CRIAI_MP_WEBHOOK_SECRET") || "";
 const databaseUrl = Deno.env.get("SUPABASE_DB_URL") || "";
@@ -319,6 +350,17 @@ Deno.serve(async (req: Request) => {
       return json({ configured: sellerReady(), recovery_ready: recoveryReady(), portuguese_pdf: await fileReady("pt"), english_pdf: await fileReady("en"),
         gateway: "checkout-pro-orders", currencies: { pt: "BRL", en: "BRL" } });
     }
+    if (route === "quote" && req.method === "GET") {
+      try {
+        const quote = await englishPtaxQuote();
+        return json({ target_usd: EN_USD_TARGET, currency: "USD",
+          checkout_currency: "BRL", charge_brl: quote.amountBRL,
+          ptax_sell: quote.ptaxSell, quoted_at: quote.quotedAt,
+          notice: "The buyer's card issuer may use a different rate and charge fees." });
+      } catch (_) {
+        return json({ error: "Today's USD/BRL quote is temporarily unavailable; no charge was made." }, 503);
+      }
+    }
     if (route === "recovery/request" && req.method === "POST") return await requestRecovery(req);
     if (route === "recovery/verify" && req.method === "POST") return await verifyRecovery(req);
     if (route === "recovery/download" && req.method === "POST") return await recoveryDownload(req);
@@ -329,7 +371,17 @@ Deno.serve(async (req: Request) => {
       const edition = input?.edition === "en" ? "en" : input?.edition === "pt" ? "pt" : null;
       if (!locale || !edition || !validEmail(input?.email)) return json({ error: "Choose a PDF edition and enter a valid email." }, 400);
       if (!await fileReady(edition)) return json({ error: "Selected PDF edition is not ready for secure delivery." }, 503);
-      const price = PRICES[locale];
+      let price: { amount: number; currency: "BRL" };
+      if (locale === "en") {
+        try {
+          const quote = await englishPtaxQuote();
+          price = { amount: quote.amountBRL, currency: "BRL" };
+        } catch (_) {
+          return json({ error: "The current exchange rate is unavailable. Please try again later; no charge was made." }, 503);
+        }
+      } else {
+        price = PRICES.pt;
+      }
       const id = crypto.randomUUID(), accessToken = randomToken();
       const hash = await digest(accessToken);
       await sql!`insert into criai_private.ebook_orders
@@ -357,7 +409,7 @@ Deno.serve(async (req: Request) => {
       if (!mp.ok || typeof response.checkout_url !== "string" || !safeMpOrderId(response.id)) {
         await sql!`update criai_private.ebook_orders set payment_state='failed', updated_at=now() where id=${id}::uuid`;
         return json({ error: locale === "en"
-          ? "Payment method or USD currency is not available for this merchant account. No charge was made."
+          ? "Payment method is unavailable for this merchant account. No charge was made."
           : "Não foi possível abrir o checkout. Nenhuma cobrança foi feita." }, 503);
       }
       const checkout = new URL(response.checkout_url);
