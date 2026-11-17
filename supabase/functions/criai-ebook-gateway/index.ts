@@ -8,7 +8,9 @@ const SITE = "https://criai.xrmovi.com.br";
 const API = "https://api.mercadopago.com";
 const BUCKET = "criai-paid-ebooks";
 const FILES = { pt: "criai-ia-pt-2026.pdf", en: "criai-ia-en-2026.pdf" } as const;
-const PRICES = { pt: { amount: 49.90, currency: "BRL" }, en: { amount: 9.00, currency: "USD" } } as const;
+// Mercado Pago Brazil Checkout Pro settles in BRL for both language pages.
+// Never advertise a fixed USD price unless a USD-capable processor is integrated.
+const PRICES = { pt: { amount: 49.90, currency: "BRL" }, en: { amount: 49.90, currency: "BRL" } } as const;
 const envToken = () => Deno.env.get("CRIAI_MP_ACCESS_TOKEN") || "";
 const envWebhookSecret = () => Deno.env.get("CRIAI_MP_WEBHOOK_SECRET") || "";
 const databaseUrl = Deno.env.get("SUPABASE_DB_URL") || "";
@@ -98,7 +100,7 @@ async function getOrder(input: any) {
   const id = safeId(input?.order_id), token = safeToken(input?.access_token);
   if (!id || !token) return null;
   const hash = await digest(token);
-  const rows = await sql`select id,ebook_edition,site_locale,payment_state,mp_order_id
+  const rows = await sql`select id,ebook_edition,site_locale,payment_state,mp_order_id,currency,amount
     from criai_private.ebook_orders where id=${id}::uuid and access_token_sha256=${hash} limit 1`;
   return rows[0] || null;
 }
@@ -109,7 +111,13 @@ async function verifiedOrder(req: Request) {
   if (!order) return { error: "Purchase link not found.", code: 404 };
   if (order?.mp_order_id) {
     const synced = await syncOrder(String(order.mp_order_id));
-    if (!synced) return { error: "Unable to validate payment with the provider.", code: 503 };
+    if (!synced) {
+      const remote = await providerOrder(String(order.mp_order_id));
+      if (remote && String(remote.currency || remote.currency_id || "") !== String(order.currency)) {
+        return { error: "This test checkout used a different currency than the original order. Please return to the guide and start a new test purchase in BRL.", code: 409 };
+      }
+      return { error: "Unable to validate payment with the provider.", code: 503 };
+    }
     order = await getOrder(input);
   }
   return { order, input };
@@ -309,7 +317,7 @@ Deno.serve(async (req: Request) => {
   try {
     if (route === "health" && req.method === "GET") {
       return json({ configured: sellerReady(), recovery_ready: recoveryReady(), portuguese_pdf: await fileReady("pt"), english_pdf: await fileReady("en"),
-        gateway: "checkout-pro-orders", currencies: { pt: "BRL", en: "USD" } });
+        gateway: "checkout-pro-orders", currencies: { pt: "BRL", en: "BRL" } });
     }
     if (route === "recovery/request" && req.method === "POST") return await requestRecovery(req);
     if (route === "recovery/verify" && req.method === "POST") return await verifyRecovery(req);
