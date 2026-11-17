@@ -6,6 +6,8 @@ import { createClient } from "npm:@supabase/supabase-js@2.57.4";
 const SITE = "https://criai.xrmovi.com.br";
 const API = "https://api.stripe.com/v1";
 const PRICE = 990;
+const PRICE_ID = "price_1Ucb6jAJHURC7GeRXLK4C4Pl"; // Stripe test product, USD 9.90
+
 const TABLE = "criai_private.stripe_ebook_orders";
 const FILES = {pt:"criai-ia-pt-2026.pdf",en:"criai-ia-en-2026.pdf"} as const;
 const SECRET = Deno.env.get("CRIAI_STRIPE_TEST_SECRET_KEY") || "";
@@ -19,12 +21,12 @@ const respond = (obj:unknown,status=200)=>new Response(JSON.stringify(obj),{stat
 const validEmail=(s:unknown):s is string=>typeof s==="string" && s.length<=254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
 const safeId=(s:unknown):s is string=>typeof s==="string" && /^[a-f0-9-]{36}$/i.test(s);
 const safeToken=(s:unknown):s is string=>typeof s==="string" && /^[A-Za-z0-9_-]{40,80}$/.test(s);
-const ready=()=>SECRET.startsWith("sk_test_") && WEBHOOK_SECRET.startsWith("whsec_") && Boolean(sql&&store);
+const ready=()=>/^(sk|rk)_test_/.test(SECRET) && WEBHOOK_SECRET.startsWith("whsec_") && Boolean(sql&&store);
 function token(){const b=crypto.getRandomValues(new Uint8Array(32));return btoa(String.fromCharCode(...b)).replaceAll("+","-").replaceAll("/","_").replaceAll("=","");}
 async function sha(s:string){return Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(s)))).map(x=>x.toString(16).padStart(2,"0")).join("");}
 function form(obj:Record<string,string>){return new URLSearchParams(obj).toString();}
 async function stripeGet(path:string){
-  if(!SECRET.startsWith("sk_test_"))throw Error("Stripe test credentials missing");
+  if(!/^(sk|rk)_test_/.test(SECRET))throw Error("Stripe test credentials missing");
   const response=await fetch(API+path,{headers:{Authorization:"Bearer "+SECRET},signal:AbortSignal.timeout(10000)});
   if(!response.ok)throw Error("Stripe verification unavailable");
   return await response.json();
@@ -93,12 +95,9 @@ Deno.serve(async(req)=>{
       const params=form({
         mode:"payment",success_url:success,cancel_url:SITE+"/en/apostilas.html#offer",
         client_reference_id:id,customer_email:buyerEmail,
-        "line_items[0][price_data][currency]":"usd",
-        "line_items[0][price_data][unit_amount]":"990",
-        "line_items[0][price_data][product_data][name]":"CRIAÍ - Build Your Digital Business with AI (PDF)",
+        "line_items[0][price]":PRICE_ID,
         "line_items[0][quantity]":"1",
         "metadata[criai_order_id]":id,
-        "payment_method_types[0]":"card",
         "locale":"en"
       });
       const response=await fetch(API+"/checkout/sessions",{method:"POST",
@@ -106,6 +105,7 @@ Deno.serve(async(req)=>{
           "Idempotency-Key":"criai-stripe-"+id},body:params,signal:AbortSignal.timeout(15000)});
       const session=await response.json().catch(()=>({}));
       if(!response.ok || !/^cs_test_/.test(String(session.id||"")) ||
+        session.currency!=="usd" || session.amount_total!==PRICE || session.livemode!==false ||
         !/^https:\/\/checkout\.stripe\.com\//.test(String(session.url||""))){
         await sql!`update criai_private.stripe_ebook_orders set status='failed' where id=${id}::uuid`;
         return respond({error:"Test Checkout could not be started. No payment was made."},503);
