@@ -188,8 +188,8 @@ if 'class="en-guide-promo"' not in en_home or en_home.find('class="en-guide-prom
     fail("i18n: English home missing prominent guide banner before hero")
 if 'href="apostilas.html#offer"' not in en_home or "Buy the guide" not in en_home:
     fail("i18n: English home missing direct guide purchase entry")
-if "US$ 9.00 (USD)" in en_home or "R$ 49.90 (BRL)" not in en_home:
-    fail("i18n: English home must disclose actual BRL checkout price")
+if "US$ 9.90" not in en_home or "R$49.90" in en_home or "R$ 49.90" in en_home:
+    fail("i18n: English home must show US$9.90 guide offer without hard-coded BRL")
 
 # Bilingual delivery: English pages must be real documents, not external translations.
 from xml.etree import ElementTree as ET
@@ -264,6 +264,12 @@ for page_name,body in (("PT",ebook),("EN",english_product)):
             fail(f"ebook: {page_name} edition selector missing {needle}")
     if "ebook-language.js" not in body or "ebook-language.css" not in body:
         fail(f"ebook: {page_name} buyer language assets not included")
+# The USD reference is dynamically converted to a BRL Mercado Pago charge server-side.
+gateway_source = (ROOT / "supabase" / "functions" / "criai-ebook-gateway" / "index.ts").read_text(encoding="utf8")
+for requirement in ("EN_USD_TARGET = 9.90", "englishPtaxQuote()", "CotacaoDolarPeriodo", "route === \"quote\"", "charge_brl", "PRICES.pt"):
+    if requirement not in gateway_source:
+        fail(f"ebook: missing secure daily FX conversion {requirement}")
+
 # Paid guide recovery: public HTML provides no PDF, and backend requires OTP + paid order.
 recovery_page = ROOT / "recuperar-apostila.html"
 recovery_js = ROOT / "assets/ebook-recovery.js"
@@ -305,8 +311,8 @@ js = (ROOT / "assets/ebook-language.js").read_text(encoding="utf8")
 for rule in ("CRIAI-EBOOK-IA-01-PT", "CRIAI-EBOOK-IA-01-EN", "sessionStorage.setItem", "data-ebook-purchase", "encodeURIComponent"):
     if rule not in js:
         fail(f"ebook: language selection must be transmitted with purchase: {rule}")
-if "R$ 49.90" not in english_product or '"priceCurrency":"BRL"' not in english_product or 'data-ebook-checkout-message' not in english_product:
-    fail("i18n: English product price or dynamic checkout readiness indicator missing")
+if "US$ 9.90" not in english_product or 'data-ebook-checkout-message' not in english_product or "R$49.90" in english_product:
+    fail("i18n: English product must present USD target and keep checkout readiness")
 checkout_page = (ROOT / "compra.html").read_text(encoding="utf8")
 delivery_script = (ROOT / "assets/ebook-delivery.js").read_text(encoding="utf8")
 if 'data-download="pt"' not in checkout_page or 'data-download="en"' not in checkout_page:
