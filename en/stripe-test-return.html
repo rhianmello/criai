@@ -1,0 +1,38 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CRIAÍ — Stripe test purchase verification</title><meta name="robots" content="noindex,nofollow">
+<link rel="stylesheet" href="../assets/style.css"><link rel="stylesheet" href="../assets/en.css"></head>
+<body class="en-body"><main class="en-section"><div class="container" style="max-width:650px">
+<span class="en-tag">TEST MODE — NO REAL PAYMENT</span><h1>Verify your test order</h1>
+<p id="message" role="status" aria-live="polite">Checking the test payment directly with Stripe…</p>
+<div id="downloads" hidden><button class="btn btn-green" data-edition="en">Download English PDF</button>
+<button class="btn btn-primary" data-edition="pt">Download Portuguese PDF</button></div>
+<p><a href="stripe-test.html">Return to Stripe test checkout</a></p>
+</div></main><script>
+(()=>{
+ const api="https://ztqtcbzjesrkuaijmylm.supabase.co/functions/v1/criai-stripe-ebook-test";
+ const order=new URLSearchParams(location.search).get("order")||"",message=document.querySelector("#message"),downloads=document.querySelector("#downloads");
+ const token=/^[0-9a-f-]{36}$/i.test(order)?sessionStorage.getItem("criai_stripe_test_"+order):null;
+ if(!token){message.textContent="This test order cannot be recovered in this browser.";return;}
+ async function post(endpoint,extra={}){
+   const response=await fetch(api+"/"+endpoint,{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({order_id:order,access_token:token,...extra})});
+   const data=await response.json().catch(()=>({}));
+   if(!response.ok)throw Error(data.error||"Stripe verification unavailable");
+   return data;
+ }
+ async function verify(){
+  try{const status=await post("status");downloads.hidden=status.status!=="approved"||!status.ready;
+    message.textContent=downloads.hidden?"No confirmed test payment yet. Check again after payment approval.":"Stripe test payment confirmed. Secure PDF access is ready.";
+  }catch(error){message.textContent=String(error.message||"Verification failed");}
+ }
+ document.querySelectorAll("[data-edition]").forEach(b=>b.addEventListener("click",async()=>{
+  b.disabled=true;
+  try{const data=await post("download",{edition:b.dataset.edition});
+   const u=new URL(data.download_url);
+   if(u.protocol!=="https:"||!u.hostname.endsWith(".supabase.co"))throw Error("Unexpected download URL");
+   location.assign(u.href);
+  }catch(error){message.textContent=String(error.message||"Download unavailable");}finally{b.disabled=false;}
+ }));
+ verify();
+})();
+</script></body></html>
