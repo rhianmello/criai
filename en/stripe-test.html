@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CRIAÍ — Stripe TEST checkout</title><meta name="robots" content="noindex,nofollow">
+<link rel="stylesheet" href="../assets/style.css"><link rel="stylesheet" href="../assets/en.css"></head>
+<body class="en-body"><main class="en-section"><div class="container" style="max-width:660px">
+<span class="en-tag">TEST MODE — NO REAL MONEY</span>
+<h1>CRIAÍ digital guide: US$ 9.90</h1>
+<p>This page is for an isolated Stripe test-mode integration. It cannot accept a real payment. The public Portuguese Mercado Pago checkout is not affected.</p>
+<form id="test-payment">
+<label for="email">Test email</label>
+<input id="email" name="email" type="email" autocomplete="email" required maxlength="254" placeholder="buyer@example.com" style="display:block;width:100%;max-width:430px;padding:12px;margin:8px 0 18px">
+<fieldset style="margin:0 0 18px"><legend>PDF edition</legend>
+<label><input type="radio" name="edition" value="en" checked> English</label>
+<label><input type="radio" name="edition" value="pt"> Portuguese</label></fieldset>
+<button class="btn btn-green" type="submit">Open Stripe TEST checkout · US$ 9.90</button>
+<p id="message" role="status" aria-live="polite"></p></form>
+<a href="/en/apostilas.html">Return to the official guide</a>
+</div></main>
+<script>
+(() => {
+ const api="https://ztqtcbzjesrkuaijmylm.supabase.co/functions/v1/criai-stripe-ebook-test";
+ const form=document.querySelector("#test-payment"),status=document.querySelector("#message");
+ let busy=false;
+ form.addEventListener("submit",async(event)=>{
+  event.preventDefault();if(busy)return;
+  busy=true;const button=form.querySelector("button");button.disabled=true;status.textContent="Checking test checkout…";
+  try{
+   const response=await fetch(api+"/checkout",{method:"POST",headers:{"Content-Type":"application/json"},
+     body:JSON.stringify({email:form.email.value.trim(),edition:form.querySelector('[name="edition"]:checked').value})});
+   const order=await response.json().catch(()=>({}));
+   if(!response.ok||!order.test_mode||!/^https:\/\/checkout\.stripe\.com\//.test(order.checkout_url||"")||!order.access_token||!order.order_id)
+     throw Error(order.error||"Stripe test checkout unavailable.");
+   sessionStorage.setItem("criai_stripe_test_"+order.order_id,order.access_token);
+   location.assign(order.checkout_url);
+  }catch(error){status.textContent=String(error.message||"Unavailable");busy=false;button.disabled=false;}
+ });
+})();
+</script></body></html>
